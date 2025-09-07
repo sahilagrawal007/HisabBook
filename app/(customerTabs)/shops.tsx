@@ -1,33 +1,33 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-    arrayUnion,
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    query,
-    updateDoc,
-    where,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import React, { useCallback, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    KeyboardAvoidingView,
-    Platform,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { auth, db } from "../../firebaseConfig";
-import { Customer, Shop } from "../../types";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feather from "react-native-vector-icons/Feather";
-import { LinearGradient } from "expo-linear-gradient";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { auth, db } from "../../firebaseConfig";
+import { Customer, Shop } from "../../types";
 
 export default function CustomerShops() {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -128,8 +128,8 @@ export default function CustomerShops() {
       const shopDoc = shopsSnapshot.docs[0];
       const shopData = shopDoc.data() as Shop;
 
-      // Check if already joined
-      if (customer.shopsJoined.includes(shopData.id)) {
+      // Check if already joined (use the actual document id)
+      if (customer.shopsJoined.includes(shopDoc.id)) {
         Alert.alert("Info", "You are already a member of this shop");
         setLoading(false);
         return;
@@ -141,8 +141,8 @@ export default function CustomerShops() {
         updatedAt: new Date(),
       });
 
-      // Update shop's customers array
-      await updateDoc(doc(db, "shops", shopData.id), {
+      // Update shop's customers array (use the actual document id)
+      await updateDoc(doc(db, "shops", shopDoc.id), {
         customers: arrayUnion(user.uid),
         updatedAt: new Date(),
       });

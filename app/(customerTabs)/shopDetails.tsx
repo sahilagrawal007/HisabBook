@@ -2,29 +2,29 @@ import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  serverTimestamp,
-  where
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    onSnapshot,
+    query,
+    serverTimestamp,
+    where
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feather from "react-native-vector-icons/Feather";
@@ -47,6 +47,7 @@ const JoinedShopDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showShopInfoModal, setShowShopInfoModal] = useState(false);
 
   // Invoice/Statement generation states
   const [showStatementModal, setShowStatementModal] = useState(false);
@@ -532,6 +533,15 @@ const JoinedShopDetails: React.FC = () => {
               <Text className="text-xl font-bold text-gray-900 mb-1">
                 {shopDetails?.name || "Shop"}
               </Text>
+              {shopInfo?.shopName || shopInfo?.name || shopInfo?.address ? (
+                <TouchableOpacity
+                  onPress={() => setShowShopInfoModal(true)}
+                  className="mt-2 py-2 bg-blue-500 rounded-lg"
+                
+                >
+                  <Text className="text-white text-center font-semibold">View Shop Details</Text>
+                </TouchableOpacity>
+              ) : null}
               {/* <Text className="text-xs text-gray-500 mb-1">Shop ID: {shopDetails?.id}</Text> */}
               
                              {/* Balance Section */}
@@ -860,6 +870,102 @@ const JoinedShopDetails: React.FC = () => {
                 }}
               />
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* ========== Shop Info Modal ========== */}
+      <Modal visible={showShopInfoModal} animationType="fade" transparent>
+        <View style={modalStyles.container}>
+          <View style={modalStyles.inner}>
+            <Text style={modalStyles.title}>Shop Details</Text>
+
+            <View style={{ gap: 6 }}>
+              {!!(shopInfo?.shopName || shopDetails?.name) && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Name: </Text>
+                  {shopInfo?.shopName || shopDetails?.name}
+                </Text>
+              )}
+              {!!shopInfo?.name && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Owner: </Text>
+                  {shopInfo?.name}
+                </Text>
+              )}
+              {!!shopInfo?.phone && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Phone: </Text>
+                  {shopInfo?.phone}
+                </Text>
+              )}
+              {!!shopInfo?.email && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Email: </Text>
+                  {shopInfo?.email}
+                </Text>
+              )}
+              {!!(shopInfo?.address || shopDetails?.address) && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Address: </Text>
+                  {shopInfo?.address || shopDetails?.address}
+                </Text>
+              )}
+              {!!shopInfo?.city && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>City: </Text>
+                  {shopInfo?.city}
+                </Text>
+              )}
+              {!!shopInfo?.state && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>State: </Text>
+                  {shopInfo?.state}
+                </Text>
+              )}
+              {!!shopInfo?.pincode && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Pincode: </Text>
+                  {shopInfo?.pincode}
+                </Text>
+              )}
+              {!!shopInfo?.gstNumber && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>GST: </Text>
+                  {shopInfo?.gstNumber}
+                </Text>
+              )}
+              {!!shopInfo?.openingTime && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Opening: </Text>
+                  {shopInfo?.openingTime}
+                </Text>
+              )}
+              {!!shopInfo?.closingTime && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Closing: </Text>
+                  {shopInfo?.closingTime}
+                </Text>
+              )}
+              {shopInfo?.isOpen !== undefined && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Status: </Text>
+                  {shopInfo?.isOpen ? "Open" : "Closed"}
+                </Text>
+              )}
+              {!!shopInfo?.description && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>About: </Text>
+                  {shopInfo?.description}
+                </Text>
+              )}
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
+              <Pressable onPress={() => setShowShopInfoModal(false)} style={modalStyles.buttonPrimary}>
+                <Text style={modalStyles.buttonPrimaryText}>Close</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>

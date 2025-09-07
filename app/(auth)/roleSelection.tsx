@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { doc, setDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { doc, setDoc } from "firebase/firestore";
-import { LinearGradient } from "expo-linear-gradient";
-import { auth, db } from "../../firebaseConfig";
-import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import Feather from "react-native-vector-icons/Feather";
+import { auth, db } from "../../firebaseConfig";
 
 export default function RoleSelection() {
   const [role, setRole] = useState<"owner" | "customer" | null>(null);
@@ -78,16 +77,28 @@ export default function RoleSelection() {
 
     try {
       if (role === "owner") {
+        const generatedLink = generateShopLink(shopName);
         await setDoc(doc(db, "owners", currentUser.uid), {
           name,
           email,
           phone: currentUser.phoneNumber, // Store full number with country code
           shopName,
-          shopLink: generateShopLink(shopName),
+          shopLink: generatedLink,
           pincode,
           city,
           address,
           uid: currentUser.uid,
+          createdAt: new Date(),
+        });
+        // Also create corresponding shop document for customer discovery/join
+        await setDoc(doc(db, "shops", currentUser.uid), {
+          name: shopName,
+          link: generatedLink,
+          address,
+          city,
+          pincode,
+          ownerUid: currentUser.uid,
+          customers: [],
           createdAt: new Date(),
         });
         router.replace("/(ownerTabs)");

@@ -1,14 +1,13 @@
 // app/(ownerTabs)/qr.tsx
-import { useEffect, useRef, useState } from "react";
-import { View, Text, Alert, Button, Share, Platform, TouchableOpacity } from "react-native";
-import QRCode from "react-native-qrcode-svg";
-import { useRouter } from "expo-router";
-import Clipboard from "expo-clipboard";
-import { getAuth } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import * as FileSystem from "expo-file-system";
+import { useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
+import { getAuth } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 
 export default function OwnerQRScreen() {
   const [shopLink, setShopLink] = useState("null");
@@ -26,11 +25,29 @@ export default function OwnerQRScreen() {
     if (!user) return;
 
     try {
-      const docRef = doc(db, "owners", user.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setShopLink(docSnap.data().shopLink);
-        setShopName(docSnap.data().name);
+      const ownerRef = doc(db, "owners", user.uid);
+      const ownerSnap = await getDoc(ownerRef);
+      if (ownerSnap.exists()) {
+        const ownerData = ownerSnap.data();
+        const ownerLink = ownerData.shopLink;
+        setShopLink(ownerLink);
+        setShopName(ownerData.name);
+
+        // Ensure a corresponding shop document exists for customer discovery/join
+        const shopRef = doc(db, "shops", user.uid);
+        const shopSnap = await getDoc(shopRef);
+        if (!shopSnap.exists()) {
+          await setDoc(shopRef, {
+            name: ownerData.shopName || ownerData.name || "",
+            link: ownerLink,
+            address: ownerData.address || "",
+            city: ownerData.city || "",
+            pincode: ownerData.pincode || "",
+            ownerUid: user.uid,
+            customers: [],
+            createdAt: new Date(),
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching products:", error);
