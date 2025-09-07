@@ -35,7 +35,7 @@ export default function CustomerSettings() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.replace('/(auth)/login');
+      router.replace('/(auth)/phone-auth');
     } catch (error: any) {
       Alert.alert('Error', error.message);
     }
@@ -57,7 +57,7 @@ export default function CustomerSettings() {
               if (user) {
                 await deleteDoc(doc(db, 'customers', user.uid));
                 await deleteUser(user);
-                router.replace('/(auth)/login');
+                router.replace('/(auth)/phone-auth');
               }
             } catch (error: any) {
               Alert.alert('Error', error.message);
@@ -102,13 +102,13 @@ export default function CustomerSettings() {
               <Feather name="user" size={20} color="#555" style={styles.icon} />
               <Text style={styles.settingText}>Edit Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.settingItem}
               onPress={() => router.navigate("/(customerTabs)/changePassword")}
             >
               <Feather name="lock" size={20} color="#555" style={styles.icon} />
               <Text style={styles.settingText}>Change Password</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Order & Payment */}

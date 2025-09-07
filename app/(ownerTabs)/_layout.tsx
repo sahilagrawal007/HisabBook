@@ -38,12 +38,12 @@ export default function OwnerTabsLayout() {
           href: null,
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="ChangePassword"
         options={{
           href: null,
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="ShopInformation"
         options={{

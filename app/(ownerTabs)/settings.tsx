@@ -15,7 +15,7 @@ export default function OwnerSettings() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.replace("/(auth)/login");
+      router.replace("/(auth)/phone-auth");
     } catch (error: any) {
       Alert.alert("Error", error.message);
     }
@@ -37,7 +37,7 @@ export default function OwnerSettings() {
               if (user) {
                 await deleteDoc(doc(db, "customers", user.uid));
                 await deleteUser(user);
-                router.replace("/(auth)/login");
+                router.replace("/(auth)/phone-auth");
               }
             } catch (error: any) {
               Alert.alert("Error", error.message);
@@ -70,7 +70,7 @@ export default function OwnerSettings() {
                 <Text style={styles.settingText}>Edit Profile</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.settingItem}
               onPress={() => router.navigate("/(ownerTabs)/ChangePassword" as any)}
             >
@@ -78,7 +78,7 @@ export default function OwnerSettings() {
                 <Feather name="lock" size={20} color="#555" style={{ marginRight: 12 }} />
                 <Text style={styles.settingText}>Change Password</Text>
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Shop Details */}

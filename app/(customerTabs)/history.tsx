@@ -127,7 +127,10 @@ export default function CustomerHistory() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.navigate('/(customerTabs)/settings')} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.navigate("/(customerTabs)/settings")}
+          style={styles.backButton}
+        >
           <Feather name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.title}>Transaction History</Text>
@@ -138,9 +141,7 @@ export default function CustomerHistory() {
           <Icon name="notifications-active" size={30} color="#3B82F6" />
         </TouchableOpacity>
       </View>
-      {shopFilter && (
-        <Text style={styles.subtitle}>Filtered by: {shopFilter}</Text>
-      )}
+      {shopFilter && <Text style={styles.subtitle}>Filtered by: {shopFilter}</Text>}
 
       {/* Shop Filter - Only show if not pre-filtered */}
       {!params.shopFilter && (
@@ -148,14 +149,12 @@ export default function CustomerHistory() {
           <TextInput
             style={styles.shopFilterInput}
             placeholder="Search by shop name..."
+            placeholderTextColor="#9CA3AF"
             value={shopFilter}
             onChangeText={setShopFilter}
           />
           {shopFilter.length > 0 && (
-            <TouchableOpacity
-              style={styles.clearFilterButton}
-              onPress={() => setShopFilter("")}
-            >
+            <TouchableOpacity style={styles.clearFilterButton} onPress={() => setShopFilter("")}>
               <Text style={styles.clearFilterText}>Clear</Text>
             </TouchableOpacity>
           )}
@@ -193,30 +192,24 @@ export default function CustomerHistory() {
             <View key={transaction.id} style={styles.transactionCard}>
               <View style={styles.transactionInfo}>
                 {!shopFilter && (
-                  <Text style={styles.shopName}>
-                    {transaction.shopName || "Unknown Shop"}
-                  </Text>
+                  <Text style={styles.shopName}>{transaction.shopName || "Unknown Shop"}</Text>
                 )}
                 <Text style={styles.transactionDescription}>
                   {transaction.description || "Transaction"}
                 </Text>
-                <Text style={styles.transactionDate}>
-                  {formatDate(transaction.createdAt)}
-                </Text>
+                <Text style={styles.transactionDate}>{formatDate(transaction.createdAt)}</Text>
                 <Text style={styles.transactionType}>Type: {transaction.type.toUpperCase()}</Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
                 <Text
                   style={[
                     styles.transactionAmount,
-                    transaction.type === "due"
-                      ? styles.dueAmount
-                      : styles.paidAmount,
+                    transaction.type === "due" ? styles.dueAmount : styles.paidAmount,
                   ]}
                 >
-                  {transaction.type === "paid" || transaction.type === "advance" ? "+" : "-"}₹{transaction.amount.toFixed(2)}
+                  {transaction.type === "paid" || transaction.type === "advance" ? "+" : "-"}₹
+                  {transaction.amount.toFixed(2)}
                 </Text>
-
               </View>
             </View>
           ))
@@ -448,11 +441,18 @@ const styles = StyleSheet.create({
   shopFilterContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e0e0e0",
-    borderRadius: 8,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    borderColor: "#000",
+    borderWidth: 1,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 14,
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   shopFilterInput: {
     flex: 1,

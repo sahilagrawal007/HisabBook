@@ -67,9 +67,22 @@ export default function CustomerShops() {
       if (customerDoc.exists()) {
         const customerData = customerDoc.data() as Customer;
         setCustomer(customerData);
-        await loadJoinedShops(customerData.shopsJoined);
+
+        if (customerData.shopsJoined && customerData.shopsJoined.length > 0) {
+            const shopPromises = customerData.shopsJoined.map((shopId) =>
+              getDoc(doc(db, "shops", shopId))
+            );
+            const shopDocs = await Promise.all(shopPromises);
+            const shopsData = shopDocs
+              .map((doc) => ({ id: doc.id, ...doc.data() } as Shop))
+              .filter((shop) => shop.id);
+            setShops(shopsData);
+          } else {
+            setShops([]);
+          }
+        }
       }
-    } catch (error) {
+     catch (error) {
       console.error("Error loading customer data:", error);
     }
   };
