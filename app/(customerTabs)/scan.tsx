@@ -2,7 +2,7 @@ import { BarCodeScannerResult } from "expo-barcode-scanner";
 import { Camera, CameraView } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -22,6 +22,7 @@ export default function ScanScreen() {
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
+  const scanningRef = useRef(false);
   const router = useRouter();
 
   // Get current user from Firebase Auth directly
@@ -37,16 +38,19 @@ export default function ScanScreen() {
   };
 
   const handleBarCodeScanned = async ({ data }: BarCodeScannerResult) => {
-    if (scanned || loading) return;
+    // Check ref immediately - this is synchronous
+    if (scanningRef.current || scanned || loading) return;
+
+    scanningRef.current = true; // Set ref immediately
+    setScanned(true);
+    setLoading(true);
 
     if (!currentUser) {
       Alert.alert("Authentication Error", "Please log in to join shops.");
       router.back();
+      scanningRef.current = false; // Reset ref
       return;
     }
-
-    setScanned(true);
-    setLoading(true);
 
     try {
       if (!data || typeof data !== "string") {
@@ -58,20 +62,22 @@ export default function ScanScreen() {
       const result = await joinShopByQR(data.trim(), currentUser.uid);
 
       handleJoinResult(result, () => {
-        router.navigate("/(customerTabs)/shops"); 
+        router.navigate("/(customerTabs)/shops");
       });
     } catch (error) {
       console.error("Error processing QR code:", error);
       Alert.alert("Error", "Failed to process the QR code. Please try again.");
     } finally {
       setLoading(false);
-      if (!scanned) resetScanner();
+      scanningRef.current = false; // Reset ref
+      // Don't automatically reset scanner - let user manually reset if needed
     }
   };
 
   const resetScanner = () => {
     setScanned(false);
     setLoading(false);
+    scanningRef.current = false; // Reset ref when manually resetting
   };
 
   const handleImagePicker = async () => {

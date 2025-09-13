@@ -16,11 +16,12 @@ import {
 import { auth, db } from "../../firebaseConfig";
 import { router } from "expo-router";
 import Feather from "react-native-vector-icons/Feather";
+import { uploadProfileImage } from "@/utils/cloudUtils";
 
 export default function EditProfile() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [image, setImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -34,11 +35,11 @@ export default function EditProfile() {
           const data = userDoc.data();
           setName(data.name || user.displayName || "");
           setPhone(data.phone || "");
-          setImage(data.photoURL || user.photoURL || null);
+          setProfileImage(data.photoURL || user.photoURL || null);
         } else {
           setName(user.displayName || "");
           setPhone("");
-          setImage(user.photoURL || null);
+          setProfileImage(user.photoURL || null);
         }
       } catch (e) {
         Alert.alert("Error", "Failed to load profile");
@@ -50,14 +51,41 @@ export default function EditProfile() {
   }, []);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setImage(result.assets[0].uri);
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUri = result.assets[0].uri;
+        const user = auth.currentUser;
+
+        if (!user) {
+          Alert.alert("Error", "User not authenticated");
+          return;
+        }
+
+        try {
+          // Upload using the utility function
+          const uploadResult = await uploadProfileImage(imageUri, user.uid);
+
+          if (uploadResult) {
+            setProfileImage(uploadResult);
+            Alert.alert("Success", "Profile photo uploaded successfully!");
+          } else {
+            throw new Error(uploadResult.error);
+          }
+        } catch (error) {
+          Alert.alert("Error", "Failed to upload profile photo. Please try again.");
+          console.error("Upload error:", error);
+        } finally {
+        }
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
     }
   };
 
@@ -66,8 +94,8 @@ export default function EditProfile() {
     if (!user) return;
     setSaving(true);
     try {
-      await updateProfile(user, { displayName: name, photoURL: image });
-      await updateDoc(doc(db, "customers", user.uid), { name, phone, photoURL: image });
+      await updateProfile(user, { displayName: name, photoURL: profileImage });
+      await updateDoc(doc(db, "customers", user.uid), { name, phone, photoURL: profileImage });
       Alert.alert("Success", "Profile updated!");
     } catch (e) {
       Alert.alert("Error", "Failed to update profile");
@@ -87,13 +115,16 @@ export default function EditProfile() {
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1">
       <View style={styles.container}>
-      <TouchableOpacity onPress={() => router.navigate('/(customerTabs)/settings')} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.navigate("/(customerTabs)/settings")}
+          style={styles.backButton}
+        >
           <Feather name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.header}>Edit Profile</Text>
         <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-          {image ? (
-            <Image source={{ uri: image }} style={styles.profileImage} />
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
           ) : (
             <View style={styles.placeholderImage} />
           )}

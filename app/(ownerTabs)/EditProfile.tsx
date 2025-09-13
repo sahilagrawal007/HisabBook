@@ -1,21 +1,31 @@
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from 'expo-router';
-import { updateProfile } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
-import { auth, db } from '../../firebaseConfig';
+import { useRouter } from "expo-router";
+import { updateProfile } from "firebase/auth";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Feather from "react-native-vector-icons/Feather";
+import { auth, db } from "../../firebaseConfig";
+import { uploadProfileImage } from "../../utils/cloudUtils";
 
 export default function EditProfile() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    shopName: '',
-    address: ''
+    name: "",
+    email: "",
+    phone: "",
+    shopName: "",
+    address: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -29,67 +39,94 @@ export default function EditProfile() {
       if (!user) return;
 
       // Get user data from Firestore
-      const userDoc = await getDoc(doc(db, 'owners', user.uid));
+      const userDoc = await getDoc(doc(db, "owners", user.uid));
       if (userDoc.exists()) {
         const data = userDoc.data();
         setFormData({
-          name: data.name || '',
-          email: user.email || '',
-          phone: data.phone || '',
-          shopName: data.shopName || '',
-          address: data.address || ''
+          name: data.name || "",
+          email: user.email || "",
+          phone: data.phone || "",
+          shopName: data.shopName || "",
+          address: data.address || "",
         });
         setProfileImage(data.photoURL || user.photoURL || null);
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error("Error loading user data:", error);
     }
   };
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri);
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUri = result.assets[0].uri;
+        const user = auth.currentUser;
+
+        if (!user) {
+          Alert.alert("Error", "User not authenticated");
+          return;
+        }
+
+        try {
+          // Upload using the utility function
+          const uploadResult = await uploadProfileImage(imageUri, user.uid);
+
+          if (uploadResult) {
+            setProfileImage(uploadResult);
+            Alert.alert("Success", "Profile photo uploaded successfully!");
+          } else {
+            throw new Error(uploadResult.error);
+          }
+        } catch (error) {
+          Alert.alert("Error", "Failed to upload profile photo. Please try again.");
+          console.error("Upload error:", error);
+        } finally {
+        }
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
     }
   };
 
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.shopName.trim()) {
-      Alert.alert('Error', 'Name and Shop Name are required');
+      Alert.alert("Error", "Name and Shop Name are required");
       return;
     }
 
     setLoading(true);
     try {
       const user = auth.currentUser;
-      if (!user) throw new Error('User not authenticated');
+      if (!user) throw new Error("User not authenticated");
 
       // Update Firebase Auth profile
       await updateProfile(user, {
         displayName: formData.name,
-        photoURL: profileImage
+        photoURL: profileImage,
       });
 
       // Update Firestore data
-      await updateDoc(doc(db, 'owners', user.uid), {
+      await updateDoc(doc(db, "owners", user.uid), {
         name: formData.name,
         phone: formData.phone,
         shopName: formData.shopName,
         address: formData.address,
         photoURL: profileImage,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
 
-      Alert.alert('Success', 'Profile updated successfully', [
-        { text: 'OK', onPress: () => router.back() }
+      Alert.alert("Success", "Profile updated successfully", [
+        { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
     }
@@ -97,12 +134,12 @@ export default function EditProfile() {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => router.navigate('/settings')} style={styles.backButton}>
+      <TouchableOpacity onPress={() => router.navigate("/settings")} style={styles.backButton}>
         <Feather name="arrow-left" size={24} color="#333" />
       </TouchableOpacity>
-      
+
       <Text style={styles.title}>Edit Profile</Text>
-      
+
       <View style={styles.form}>
         {/* Profile Image Picker */}
         <View style={styles.imagePickerContainer}>
@@ -123,7 +160,7 @@ export default function EditProfile() {
           <TextInput
             style={styles.input}
             value={formData.name}
-            onChangeText={(text) => setFormData({...formData, name: text})}
+            onChangeText={(text) => setFormData({ ...formData, name: text })}
             placeholder="Enter your full name"
           />
         </View>
@@ -143,7 +180,7 @@ export default function EditProfile() {
           <TextInput
             style={styles.input}
             value={formData.phone}
-            onChangeText={(text) => setFormData({...formData, phone: text})}
+            onChangeText={(text) => setFormData({ ...formData, phone: text })}
             placeholder="Enter phone number"
             keyboardType="phone-pad"
           />
@@ -154,7 +191,7 @@ export default function EditProfile() {
           <TextInput
             style={styles.input}
             value={formData.shopName}
-            onChangeText={(text) => setFormData({...formData, shopName: text})}
+            onChangeText={(text) => setFormData({ ...formData, shopName: text })}
             placeholder="Enter shop name"
           />
         </View>
@@ -164,21 +201,19 @@ export default function EditProfile() {
           <TextInput
             style={[styles.input, styles.textArea]}
             value={formData.address}
-            onChangeText={(text) => setFormData({...formData, address: text})}
+            onChangeText={(text) => setFormData({ ...formData, address: text })}
             placeholder="Enter shop address"
             multiline
             numberOfLines={3}
           />
         </View>
 
-        <TouchableOpacity 
-          style={[styles.saveButton, loading && styles.disabledButton]} 
+        <TouchableOpacity
+          style={[styles.saveButton, loading && styles.disabledButton]}
           onPress={handleSave}
           disabled={loading}
         >
-          <Text style={styles.saveButtonText}>
-            {loading ? 'Saving...' : 'Save Changes'}
-          </Text>
+          <Text style={styles.saveButtonText}>{loading ? "Saving..." : "Save Changes"}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -274,4 +309,4 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     fontSize: 16,
   },
-}); 
+});

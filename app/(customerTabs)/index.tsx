@@ -9,22 +9,15 @@ import {
   onSnapshot,
   query,
   updateDoc,
-  where
+  where,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Dimensions,
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feather from "react-native-vector-icons/Feather";
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from "react-native-vector-icons/MaterialIcons";
 import { db } from "../../firebaseConfig";
+import { useFocusEffect } from "@react-navigation/native";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -38,7 +31,7 @@ export default function CustomerHomeScreen() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
   const [previousNotificationCount, setPreviousNotificationCount] = useState(0);
   const router = useRouter();
 
@@ -51,16 +44,15 @@ export default function CustomerHomeScreen() {
   const markNotificationAsRead = async (notificationId: string) => {
     try {
       // Update notification in Firestore to mark as read
-      const notificationRef = doc(db, 'notifications', notificationId);
+      const notificationRef = doc(db, "notifications", notificationId);
       await updateDoc(notificationRef, { read: true });
-      
+
       // Update local state
-      setNotifications(prev => prev.map(n => 
-        n.id === notificationId ? { ...n, read: true } : n
-      ));
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-    }
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (error) {}
   };
 
   // Function to show toast notification
@@ -73,11 +65,10 @@ export default function CustomerHomeScreen() {
   // Fallback function to fetch notifications without real-time updates
   const fetchNotificationsFallback = async (joinedShops: string[], customerId: string) => {
     try {
-      
-      const notificationsRef = collection(db, 'notifications');
+      const notificationsRef = collection(db, "notifications");
       const q = query(notificationsRef, where("customerId", "==", customerId));
       const snapshot = await getDocs(q);
-      
+
       const notificationsList: any[] = [];
       let unread = 0;
 
@@ -111,23 +102,25 @@ export default function CustomerHomeScreen() {
   const testNotifications = async () => {
     const user = getAuth().currentUser;
     if (!user) {
-      Alert.alert('Error', 'No authenticated user');
+      Alert.alert("Error", "No authenticated user");
       return;
     }
-    
+
     try {
-      
       // Test direct Firestore query
-      const notificationsRef = collection(db, 'notifications');
+      const notificationsRef = collection(db, "notifications");
       const snapshot = await getDocs(notificationsRef);
-      
+
       snapshot.forEach((doc) => {
         const data = doc.data();
       });
-      
-      Alert.alert('Test Complete', `Found ${snapshot.size} total notifications. Check console for details.`);
+
+      Alert.alert(
+        "Test Complete",
+        `Found ${snapshot.size} total notifications. Check console for details.`
+      );
     } catch (error) {
-      Alert.alert('Test Failed', 'Check console for error details.');
+      Alert.alert("Test Failed", "Check console for error details.");
     }
   };
 
@@ -135,24 +128,23 @@ export default function CustomerHomeScreen() {
   const recalculateAnalytics = async () => {
     const user = getAuth().currentUser;
     if (!user) {
-      Alert.alert('Error', 'No authenticated user');
+      Alert.alert("Error", "No authenticated user");
       return;
     }
 
     try {
-      
       // Get current joined shops
       const customerDoc = await getDoc(doc(db, "customers", user.uid));
       if (!customerDoc.exists()) {
-        Alert.alert('Error', 'Customer profile not found');
+        Alert.alert("Error", "Customer profile not found");
         return;
       }
-      
+
       const customerData = customerDoc.data();
       const joinedShops: string[] = customerData.shopsJoined || [];
-      
+
       if (joinedShops.length === 0) {
-        Alert.alert('No Shops', 'You are not joined to any shops yet');
+        Alert.alert("No Shops", "You are not joined to any shops yet");
         return;
       }
 
@@ -162,16 +154,16 @@ export default function CustomerHomeScreen() {
         where("customerId", "==", user.uid),
         where("shopId", "in", joinedShops)
       );
-      
+
       const snapshot = await getDocs(txnQuery);
       let totalPaid = 0;
       let totalAdvance = 0;
       let totalDue = 0;
-      
+
       snapshot.forEach((doc) => {
         const txn = doc.data();
         const amount = Number(txn.amount) || 0;
-        
+
         if (txn.type === "paid") {
           totalPaid += amount;
         } else if (txn.type === "due") {
@@ -188,12 +180,12 @@ export default function CustomerHomeScreen() {
       setDue(netDue);
       setSpent(totalSpent);
 
-      Alert.alert('Recalculation Complete', 
+      Alert.alert(
+        "Recalculation Complete",
         `New values:\nTotal Spent: ₹${totalSpent}\nDue: ₹${netDue}\nCheck console for details.`
       );
-      
     } catch (error) {
-      Alert.alert('Recalculation Failed', 'Check console for error details.');
+      Alert.alert("Recalculation Failed", "Check console for error details.");
     }
   };
 
@@ -217,7 +209,7 @@ export default function CustomerHomeScreen() {
       customerUnsubscribe = onSnapshot(doc(db, "customers", user.uid), (doc) => {
         // Check if user is still authenticated before processing data
         if (!getAuth().currentUser) return;
-        
+
         if (doc.exists()) {
           const data = doc.data();
           setCustomer(data);
@@ -246,43 +238,50 @@ export default function CustomerHomeScreen() {
             where("customerId", "==", user.uid)
           );
 
-          notificationsUnsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
-            // Check if user is still authenticated before processing data
-            if (!getAuth().currentUser) return;
-            
-            const notificationsList: any[] = [];
-            let unread = 0;
+          notificationsUnsubscribe = onSnapshot(
+            notificationsQuery,
+            (snapshot) => {
+              // Check if user is still authenticated before processing data
+              if (!getAuth().currentUser) return;
 
-            snapshot.forEach((doc) => {
-              const notification = { id: doc.id, ...doc.data() };
-              // Include ALL notifications for this customer (not just from joined shops)
-              // This shows complete history including past notifications from shops they may have left
-              notificationsList.push(notification);
-              if (!(notification as any).read) {
-                unread++;
+              const notificationsList: any[] = [];
+              let unread = 0;
+
+              snapshot.forEach((doc) => {
+                const notification = { id: doc.id, ...doc.data() };
+                // Include ALL notifications for this customer (not just from joined shops)
+                // This shows complete history including past notifications from shops they may have left
+                notificationsList.push(notification);
+                if (!(notification as any).read) {
+                  unread++;
+                }
+              });
+
+              // Sort by creation date (newest first)
+              notificationsList.sort((a, b) => {
+                const dateA = new Date((a as any).createdAt || 0).getTime();
+                const dateB = new Date((b as any).createdAt || 0).getTime();
+                return dateB - dateA;
+              });
+
+              // Check if new notifications arrived
+              if (
+                notificationsList.length > previousNotificationCount &&
+                previousNotificationCount > 0
+              ) {
+                const newCount = notificationsList.length - previousNotificationCount;
+                displayToast(`You have ${newCount} new notification${newCount > 1 ? "s" : ""}!`);
               }
-            });
 
-            // Sort by creation date (newest first)
-            notificationsList.sort((a, b) => {
-              const dateA = new Date((a as any).createdAt || 0).getTime();
-              const dateB = new Date((b as any).createdAt || 0).getTime();
-              return dateB - dateA;
-            });
-
-            // Check if new notifications arrived
-            if (notificationsList.length > previousNotificationCount && previousNotificationCount > 0) {
-              const newCount = notificationsList.length - previousNotificationCount;
-              displayToast(`You have ${newCount} new notification${newCount > 1 ? 's' : ''}!`);
+              setNotifications(notificationsList);
+              setUnreadCount(unread);
+              setPreviousNotificationCount(notificationsList.length);
+            },
+            (error) => {
+              // Fallback: try to fetch without real-time updates
+              fetchNotificationsFallback(joinedShops, user.uid);
             }
-
-            setNotifications(notificationsList);
-            setUnreadCount(unread);
-            setPreviousNotificationCount(notificationsList.length);
-          }, (error) => {
-            // Fallback: try to fetch without real-time updates
-            fetchNotificationsFallback(joinedShops, user.uid);
-          });
+          );
         } catch (error) {
           // Fallback: try to fetch without real-time updates
           fetchNotificationsFallback(joinedShops, user.uid);
@@ -299,7 +298,7 @@ export default function CustomerHomeScreen() {
       unsubscribe = onSnapshot(txnQuery, (snapshot) => {
         // Check if user is still authenticated before processing data
         if (!getAuth().currentUser) return;
-        
+
         let totalPaid = 0;
         let totalAdvance = 0;
         let totalDue = 0;
@@ -307,7 +306,7 @@ export default function CustomerHomeScreen() {
         snapshot.forEach((doc) => {
           const txn = doc.data();
           const amount = Number(txn.amount) || 0;
-          
+
           if (txn.type === "paid") {
             totalPaid += amount;
           } else if (txn.type === "due") {
@@ -320,10 +319,10 @@ export default function CustomerHomeScreen() {
         // Calculate net outstanding due (what customer actually owes)
         // Due transactions - (Paid + Advance payments)
         const netDue = Math.max(totalDue - (totalPaid + totalAdvance), 0);
-        
+
         // Total spent = All payments made (paid + advance)
         const totalSpent = totalPaid + totalAdvance;
-        
+
         // Total credit used = Total due amount (what was purchased on credit)
         const totalCreditUsed = totalDue;
 
@@ -341,7 +340,6 @@ export default function CustomerHomeScreen() {
     };
   }, []);
 
-
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#F7F7F7]">
       <ScrollView contentContainerStyle={{ padding: 16 }}>
@@ -351,10 +349,7 @@ export default function CustomerHomeScreen() {
             <Icon name="storefront" size={30} color="#4B82F6" />
             <Text className="text-xl font-bold text-gray-900 ml-2">ShopMunim</Text>
           </View>
-          <TouchableOpacity
-            onPress={() => router.navigate("./notifications")}
-            className="relative"
-          >
+          <TouchableOpacity onPress={() => router.navigate("./notifications")} className="relative">
             <Icon name="notifications-active" size={30} color="#3B82F6" />
             {unreadCount > 0 && (
               <View className="absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 items-center justify-center">
@@ -430,23 +425,23 @@ export default function CustomerHomeScreen() {
         <View className="mb-6 bg-white p-4 rounded-lg shadow-md border border-gray-200">
           <Text className="text-lg font-bold text-gray-800 mb-4">Spending Summary</Text>
           <View className="flex-row justify-between">
-          {/* Total Spent Card (Updated to Red Theme) */}
-          <View className="w-[48%] bg-white p-4 rounded-xl shadow items-center">
-            <View className="bg-red-100 p-3 rounded-full mb-2">
-              <Icon name="currency-rupee" size={28} color="#EF4444" />
+            {/* Total Spent Card (Updated to Red Theme) */}
+            <View className="w-[48%] bg-white p-4 rounded-xl shadow items-center">
+              <View className="bg-red-100 p-3 rounded-full mb-2">
+                <Icon name="currency-rupee" size={28} color="#EF4444" />
+              </View>
+              <Text className="text-lg font-bold text-red-600">₹{spent}</Text>
+              <Text className="text-sm text-gray-500 text-center">Total Spent</Text>
             </View>
-            <Text className="text-lg font-bold text-red-600">₹{spent}</Text>
-            <Text className="text-sm text-gray-500 text-center">Total Spent</Text>
-          </View>
 
-          {/* Due Card (Yellow Theme) */}
-          <View className="w-[48%] bg-white p-4 rounded-xl shadow items-center">
-            <View className="bg-yellow-100 p-3 rounded-full mb-2">
-              <Feather name="clock" size={20} color="#F59E0B" />
+            {/* Due Card (Yellow Theme) */}
+            <View className="w-[48%] bg-white p-4 rounded-xl shadow items-center">
+              <View className="bg-yellow-100 p-3 rounded-full mb-2">
+                <Feather name="clock" size={20} color="#F59E0B" />
+              </View>
+              <Text className="text-lg font-bold text-yellow-600">₹{due}</Text>
+              <Text className="text-sm text-gray-500 text-center">Due</Text>
             </View>
-            <Text className="text-lg font-bold text-yellow-600">₹{due}</Text>
-            <Text className="text-sm text-gray-500 text-center">Due</Text>
-          </View>
           </View>
         </View>
 
@@ -459,9 +454,7 @@ export default function CustomerHomeScreen() {
                 onPress={() => router.push("/(customerTabs)/shops")}
                 className="bg-blue-50 px-3 py-1 rounded-full"
               >
-                <Text className="text-blue-600 text-sm font-medium">
-                  View All ({shops.length})
-                </Text>
+                <Text className="text-blue-600 text-sm font-medium">View All ({shops.length})</Text>
               </TouchableOpacity>
             )}
           </View>

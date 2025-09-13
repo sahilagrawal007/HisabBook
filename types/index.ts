@@ -2,14 +2,12 @@ export interface Owner {
   uid: string;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   shopName: string;
   shopLink: string;
-  pincode: string;
-  city: string;
-  address: string;
   createdAt: Date;
   updatedAt: Date;
+  photoURL?: string;
 }
 
 export interface Customer {

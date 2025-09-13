@@ -11,12 +11,13 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { doc, setDoc } from "firebase/firestore";
+import { arrayUnion, doc, setDoc } from "firebase/firestore";
 import { LinearGradient } from "expo-linear-gradient";
 import { auth, db } from "../../firebaseConfig";
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Feather from "react-native-vector-icons/Feather";
+import { Owner, Shop } from "@/types";
 
 export default function RoleSelection() {
   const [role, setRole] = useState<"owner" | "customer" | null>(null);
@@ -78,18 +79,36 @@ export default function RoleSelection() {
 
     try {
       if (role === "owner") {
-        await setDoc(doc(db, "owners", currentUser.uid), {
+        const now = new Date();
+        const shopLink = generateShopLink(shopName);
+        const ownerData: Owner = {
+          uid: currentUser.uid,
           name,
-          email,
+          email: currentUser.email || "",
           phone: currentUser.phoneNumber, // Store full number with country code
           shopName,
-          shopLink: generateShopLink(shopName),
+          shopLink,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        await setDoc(doc(db, "owners", currentUser.uid), ownerData);
+
+        // Create shop document
+        const shopData: Shop = {
+          id: currentUser.uid,
+          ownerId: currentUser.uid,
+          name: shopName,
+          link: shopLink,
+          customers: [],
           pincode,
           city,
           address,
-          uid: currentUser.uid,
-          createdAt: new Date(),
-        });
+          createdAt: now,
+          updatedAt: now,
+        };
+        await setDoc(doc(db, "shops", currentUser.uid), shopData);
+
         router.replace("/(ownerTabs)");
       } else {
         await setDoc(doc(db, "customers", currentUser.uid), {
