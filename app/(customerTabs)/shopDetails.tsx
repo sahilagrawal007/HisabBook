@@ -47,7 +47,8 @@ const JoinedShopDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [showShopInfoModal, setShowShopInfoModal] = useState(false);
+  
   // Invoice/Statement generation states
   const [showStatementModal, setShowStatementModal] = useState(false);
   const [fromDate, setFromDate] = useState<string>("");
@@ -56,7 +57,6 @@ const JoinedShopDetails: React.FC = () => {
 
   // Shop info for invoices/statements
   const [shopInfo, setShopInfo] = useState<any>(null);
-  // Dynamic date picker support
   const [DateTimePickerComponent, setDateTimePickerComponent] = useState<any>(null);
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
@@ -71,7 +71,7 @@ const JoinedShopDetails: React.FC = () => {
       if (!getAuth().currentUser) return;
       
       if (shopDoc.exists()) {
-        const shopData = { id: shopDoc.id, ...shopDoc.data() } as any;
+        const shopData = { id: shopDoc.id, ...shopDoc.data() } as any;  
         setShopDetails(shopData);
       }
     }, (error) => {
@@ -121,7 +121,9 @@ const JoinedShopDetails: React.FC = () => {
         const ownerSnap = await getDoc(ownerRef);
         if (ownerSnap.exists()) {
           setShopInfo({ uid: ownerSnap.id, ...(ownerSnap.data() as any) });
-        }
+          console.log(shopInfo);
+          
+        }    
       } catch (err) {
         console.error("Failed to load shop info:", err);
       }
@@ -532,37 +534,42 @@ const JoinedShopDetails: React.FC = () => {
               <Text className="text-xl font-bold text-gray-900 mb-1">
                 {shopDetails?.name || "Shop"}
               </Text>
-              {/* <Text className="text-xs text-gray-500 mb-1">Shop ID: {shopDetails?.id}</Text> */}
-              
-                             {/* Balance Section */}
-               <View className="mt-3">
-                 <Text className="text-sm font-semibold text-gray-700 mb-2">Current Balance</Text>
-                 <View className="flex-row justify-between">
-                   {/* Due Section */}
-                   <View className="flex-1 bg-red-50 p-3 rounded-lg mr-2">
-                     <Text className="text-xs text-gray-600 mb-1">Amount Due</Text>
-                     <Text className="text-lg font-bold text-red-600">
-                       ₹{calculateBalance().due.toFixed(2)}
-                     </Text>
-                     <Text className="text-xs text-gray-500 mt-1">
-                       {calculateBalance().due > 0 ? 'You owe this amount' : 'No amount due'}
-                     </Text>
-                   </View>
-                   
-                   {/* Advance Section */}
-                   <View className="flex-1 bg-green-50 p-3 rounded-lg ml-2">
-                     <Text className="text-xs text-gray-600 mb-1">Credit Balance</Text>
-                     <Text className="text-lg font-bold text-green-600">
-                       ₹{calculateBalance().advance.toFixed(2)}
-                     </Text>
-                     <Text className="text-xs text-gray-500 mt-1">
-                       {calculateBalance().advance > 0 ? 'You have credit' : 'No credit'}
-                     </Text>
-                   </View>
-                 </View>
-                 
-                 
-               </View>
+              {shopInfo?.shopName || shopDetails?.name || shopDetails?.address ? (
+                <TouchableOpacity
+                  onPress={() => setShowShopInfoModal(true)}
+                  className="mt-2 py-2 bg-blue-500 rounded-lg"
+                >
+                  <Text className="text-white text-center font-semibold">View Shop Details</Text>
+                </TouchableOpacity>
+              ) : null}
+
+              {/* Balance Section */}
+              <View className="mt-3">
+                <Text className="text-sm font-semibold text-gray-700 mb-2">Current Balance</Text>
+                <View className="flex-row justify-between">
+                  {/* Due Section */}
+                  <View className="flex-1 bg-red-50 p-3 rounded-lg mr-2">
+                    <Text className="text-xs text-gray-600 mb-1">Amount Due</Text>
+                    <Text className="text-lg font-bold text-red-600">
+                      ₹{calculateBalance().due.toFixed(2)}
+                    </Text>
+                    <Text className="text-xs text-gray-500 mt-1">
+                      {calculateBalance().due > 0 ? "You owe this amount" : "No amount due"}
+                    </Text>
+                  </View>
+
+                  {/* Advance Section */}
+                  <View className="flex-1 bg-green-50 p-3 rounded-lg ml-2">
+                    <Text className="text-xs text-gray-600 mb-1">Credit Balance</Text>
+                    <Text className="text-lg font-bold text-green-600">
+                      ₹{calculateBalance().advance.toFixed(2)}
+                    </Text>
+                    <Text className="text-xs text-gray-500 mt-1">
+                      {calculateBalance().advance > 0 ? "You have credit" : "No credit"}
+                    </Text>
+                  </View>
+                </View>
+              </View>
             </View>
 
             {/* Product List */}
@@ -860,6 +867,105 @@ const JoinedShopDetails: React.FC = () => {
                 }}
               />
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* ========== Shop Info Modal ========== */}
+      <Modal visible={showShopInfoModal} animationType="fade" transparent>
+        <View style={modalStyles.container}>
+          <View style={modalStyles.inner}>
+            <Text style={modalStyles.title}>Shop Details</Text>
+
+            <View style={{ gap: 6 }}>
+              {!!(shopInfo?.shopName || shopDetails?.name) && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Name: </Text>
+                  {shopInfo?.shopName || shopDetails?.name}
+                </Text>
+              )}
+              {!!shopInfo?.name && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Owner: </Text>
+                  {shopInfo?.name}
+                </Text>
+              )}
+              {!!shopDetails?.phone && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Phone: </Text>
+                  {shopDetails?.phone}
+                </Text>
+              )}
+              {!!shopInfo?.email && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Email: </Text>
+                  {shopInfo?.email}
+                </Text>
+              )}
+              {!!shopDetails?.address && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Address: </Text>
+                  {shopDetails?.address}
+                </Text>
+              )}
+              {!!shopDetails?.city && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>City: </Text>
+                  {shopDetails?.city}
+                </Text>
+              )}
+              {!!shopDetails?.state && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>State: </Text>
+                  {shopDetails?.state}
+                </Text>
+              )}
+              {!!shopDetails?.pincode && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Pincode: </Text>
+                  {shopDetails?.pincode}
+                </Text>
+              )}
+              {!!shopDetails?.gstNumber && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>GST: </Text>
+                  {shopDetails?.gstNumber}
+                </Text>
+              )}
+              {!!shopDetails?.openingTime && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Opening: </Text>
+                  {shopDetails?.openingTime}
+                </Text>
+              )}
+              {!!shopDetails?.closingTime && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Closing: </Text>
+                  {shopDetails?.closingTime}
+                </Text>
+              )}
+              {shopDetails?.isOpen !== undefined && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>Status: </Text>
+                  {shopDetails?.isOpen ? "Open" : "Closed"}
+                </Text>
+              )}
+              {!!shopDetails?.description && (
+                <Text style={{ fontSize: 14 }}>
+                  <Text style={{ fontWeight: "700" }}>About: </Text>
+                  {shopDetails?.description}
+                </Text>
+              )}
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
+              <Pressable
+                onPress={() => setShowShopInfoModal(false)}
+                style={modalStyles.buttonPrimary}
+              >
+                <Text style={modalStyles.buttonPrimaryText}>Close</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>

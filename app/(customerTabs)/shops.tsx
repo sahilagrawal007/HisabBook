@@ -163,11 +163,11 @@ export default function CustomerShops() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F7F7F7]">
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -189,18 +189,21 @@ export default function CustomerShops() {
           {/* Join New Shop Section */}
           <View className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-100">
             <Text className="text-gray-700 text-lg font-bold mb-2">+ Join New Shop</Text>
-            <Text className="text-gray-500 text-sm mb-4">Enter shop link or scan QR code to join</Text>
+            <Text className="text-gray-500 text-sm mb-4">
+              Enter shop link or scan QR code to join
+            </Text>
 
             <Text className="text-gray-400 mb-2 text-sm">Shop Link</Text>
             <TextInput
               placeholder="e.g. shop123"
+              placeholderTextColor="#9CA3AF"
               value={shopLink}
               onChangeText={setShopLink}
               autoCapitalize="none"
               className="border border-gray-300 rounded-lg px-3 py-3 mb-3 text-gray-700"
             />
 
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={joinShop}
               disabled={loading}
               className="rounded-lg overflow-hidden mb-3"
@@ -250,9 +253,9 @@ export default function CustomerShops() {
                   <TextInput
                     className="flex-1 ml-2 text-gray-700"
                     placeholder="Search shops..."
+                    placeholderTextColor="#9CA3AF"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
-                    placeholderTextColor="#999"
                   />
                   {searchQuery.length > 0 && (
                     <TouchableOpacity onPress={() => setSearchQuery("")}>

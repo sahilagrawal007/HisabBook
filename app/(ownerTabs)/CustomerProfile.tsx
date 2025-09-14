@@ -739,17 +739,20 @@ const CustomerProfile: React.FC = () => {
 
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#F7F7F7]">
-    <ScrollView>
-      <View className="flex-1 p-4">
-        <TouchableOpacity onPress={() => router.navigate("/(ownerTabs)")} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="#333" />
-        </TouchableOpacity>
+      <ScrollView>
+        <View className="flex-1 p-4">
+          <TouchableOpacity
+            onPress={() => router.navigate("/(ownerTabs)")}
+            style={styles.backButton}
+          >
+            <Feather name="arrow-left" size={24} color="#333" />
+          </TouchableOpacity>
 
           {/* Header */}
           <View className="mb-4 bg-white p-4 rounded-lg shadow">
             <Text className="text-xl font-bold text-gray-800">{customer.name}</Text>
             <Text className="text-xs text-gray-500">Customer ID: {customer.uid}</Text>
-            
+
             {/* Balance Section */}
             <View className="mt-3">
               <Text className="text-sm font-semibold text-gray-700 mb-2">Current Balance</Text>
@@ -761,10 +764,10 @@ const CustomerProfile: React.FC = () => {
                     ₹{calculateBalance().due.toFixed(2)}
                   </Text>
                   <Text className="text-xs text-gray-500 mt-1">
-                    {calculateBalance().due > 0 ? 'Customer owes this amount' : 'No amount due'}
+                    {calculateBalance().due > 0 ? "Customer owes this amount" : "No amount due"}
                   </Text>
                 </View>
-                
+
                 {/* Advance Section */}
                 <View className="flex-1 bg-green-50 p-3 rounded-lg ml-2">
                   <Text className="text-xs text-gray-600 mb-1">Credit Balance</Text>
@@ -772,7 +775,7 @@ const CustomerProfile: React.FC = () => {
                     ₹{calculateBalance().advance.toFixed(2)}
                   </Text>
                   <Text className="text-xs text-gray-500 mt-1">
-                    {calculateBalance().advance > 0 ? 'Customer has credit' : 'No credit'}
+                    {calculateBalance().advance > 0 ? "Customer has credit" : "No credit"}
                   </Text>
                 </View>
               </View>
@@ -780,11 +783,21 @@ const CustomerProfile: React.FC = () => {
           </View>
 
           {/* Row with Add Transaction, Record Payment, Download Statement and Send Reminder */}
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 12,
+              flexWrap: "wrap",
+            }}
+          >
             <TouchableOpacity
               className="bg-blue-500 rounded-lg py-2 px-3"
               onPress={() =>
-                router.push({ pathname: "/(ownerTabs)/AddTransaction", params: { customerId, shopId } })
+                router.push({
+                  pathname: "/(ownerTabs)/AddTransaction",
+                  params: { customerId, shopId },
+                })
               }
               style={{ flex: 1, marginRight: 6, marginBottom: 6, minWidth: "48%" }}
             >
@@ -819,9 +832,7 @@ const CustomerProfile: React.FC = () => {
             >
               <Text
                 className={`font-bold text-center text-sm ${
-                  sendingReminder || !canSendReminder()
-                    ? "text-gray-500"
-                    : "text-white"
+                  sendingReminder || !canSendReminder() ? "text-gray-500" : "text-white"
                 }`}
               >
                 {sendingReminder
@@ -842,7 +853,9 @@ const CustomerProfile: React.FC = () => {
                   <Text className="text-orange-800 text-sm">
                     {sendingReminder
                       ? "Sending payment reminder to customer..."
-                      : `Ready to send payment reminder to ${customer?.name} for ₹${calculateBalance().due.toFixed(2)}.`}
+                      : `Ready to send payment reminder to ${
+                          customer?.name
+                        } for ₹${calculateBalance().due.toFixed(2)}.`}
                   </Text>
                   {lastReminderSent && !sendingReminder && (
                     <View>
@@ -873,28 +886,39 @@ const CustomerProfile: React.FC = () => {
             <View className="flex-row justify-between items-center mb-3">
               <Text className="text-base font-bold text-gray-800">Transaction History</Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text className="text-xs text-gray-500" style={{ marginRight: 12 }}>({transactions.length} transactions)</Text>
+                <Text className="text-xs text-gray-500" style={{ marginRight: 12 }}>
+                  ({transactions.length} transactions)
+                </Text>
                 {transactions.length > 5 && (
                   <TouchableOpacity
-                    onPress={() => router.navigate({ pathname: "./history", params: { customerId } } )}
+                    onPress={() =>
+                      router.navigate({ pathname: "./history", params: { customerId } })
+                    }
                   >
                     <Text className="text-sm font-semibold text-blue-600">View All</Text>
                   </TouchableOpacity>
                 )}
               </View>
             </View>
-            
+
             {transactions.slice(0, 5).map((item) => (
-              <View key={item.id} className="flex-row justify-between items-center py-3 border-b border-gray-100">
+              <View
+                key={item.id}
+                className="flex-row justify-between items-center py-3 border-b border-gray-100"
+              >
                 <View>
-                  <Text className="font-medium text-gray-800">{item.description || "Transaction"}</Text>
+                  <Text className="font-medium text-gray-800">
+                    {item.description || "Transaction"}
+                  </Text>
                   <Text className="text-xs text-gray-400">
                     {new Date(getTimeFromCreatedAt(item.createdAt)).toLocaleString()}
                   </Text>
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Text
-                    className={`font-semibold ${item.type === "due" ? "text-red-600" : "text-green-600"}`}
+                    className={`font-semibold ${
+                      item.type === "due" ? "text-red-600" : "text-green-600"
+                    }`}
                     style={{ marginRight: 12 }}
                   >
                     {item.type === "due" ? "+" : "-"}₹{item.amount}
@@ -908,7 +932,7 @@ const CustomerProfile: React.FC = () => {
                 </View>
               </View>
             ))}
-            
+
             {transactions.length === 0 && (
               <Text className="text-center text-gray-400 mt-4">No transactions found.</Text>
             )}
@@ -917,126 +941,131 @@ const CustomerProfile: React.FC = () => {
       </ScrollView>
 
       {/* ========== Offline Payment Modal ========== */}
-        <Modal visible={showPaymentModal} animationType="fade" transparent>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={modalStyles.container}
-          >
-            <View style={[modalStyles.inner, { marginBottom: Platform.OS === 'ios' ? 34 : 0 }]}>
-              <Text style={modalStyles.title}>Record Offline Payment</Text>
+      <Modal visible={showPaymentModal} animationType="fade" transparent>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={modalStyles.container}
+        >
+          <View style={[modalStyles.inner, { marginBottom: Platform.OS === "ios" ? 34 : 0 }]}>
+            <Text style={modalStyles.title}>Record Offline Payment</Text>
 
-              <Text style={modalStyles.label}>Amount (₹)</Text>
-              <TextInput
-                keyboardType="numeric"
-                placeholder="e.g. 500"
-                value={paymentAmount}
-                onChangeText={setPaymentAmount}
-                style={modalStyles.input}
-              />
+            <Text style={modalStyles.label}>Amount (₹)</Text>
+            <TextInput
+              keyboardType="numeric"
+              placeholder="e.g. 500"
+              placeholderTextColor="#9CA3AF"
+              value={paymentAmount}
+              onChangeText={setPaymentAmount}
+              style={modalStyles.input}
+            />
 
-              <Text style={[modalStyles.label, { marginTop: 8 }]}>Note (optional)</Text>
-              <TextInput
-                placeholder="e.g. Cash received at shop"
-                value={paymentNote}
-                onChangeText={setPaymentNote}
-                style={modalStyles.input}
-              />
+            <Text style={[modalStyles.label, { marginTop: 8 }]}>Note (optional)</Text>
+            <TextInput
+              placeholder="e.g. Cash received at shop"
+              placeholderTextColor="#9CA3AF"
+              value={paymentNote}
+              onChangeText={setPaymentNote}
+              style={modalStyles.input}
+            />
 
-              <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
-                <Pressable onPress={closePaymentModal} style={modalStyles.buttonOutline}>
-                  <Text style={modalStyles.buttonOutlineText}>Cancel</Text>
-                </Pressable>
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
+              <Pressable onPress={closePaymentModal} style={modalStyles.buttonOutline}>
+                <Text style={modalStyles.buttonOutlineText}>Cancel</Text>
+              </Pressable>
 
-                <Pressable
-                  onPress={submitOfflinePayment}
-                  style={[modalStyles.buttonPrimary, processingPayment ? { opacity: 0.6 } : {}]}
-                  disabled={processingPayment}
-                >
-                  <Text style={modalStyles.buttonPrimaryText}>
-                    {processingPayment ? "Saving..." : "Confirm"}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-          </KeyboardAvoidingView>
-        </Modal>
-
-        {/* ========== Statement Range Modal ========== */}
-        <Modal visible={showStatementModal} animationType="fade" transparent>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={modalStyles.container}
-          >
-            <View style={[modalStyles.inner, { marginBottom: Platform.OS === 'ios' ? 34 : 0 }]}>
-              <Text style={modalStyles.title}>Download Statement</Text>
-              <Text style={modalStyles.label}>From</Text>
-              <TouchableOpacity
-                onPress={() => setShowFromPicker(true)}
-                style={[modalStyles.input, { justifyContent: "center" }]}
+              <Pressable
+                onPress={submitOfflinePayment}
+                style={[modalStyles.buttonPrimary, processingPayment ? { opacity: 0.6 } : {}]}
+                disabled={processingPayment}
               >
-                <Text>{fromDate || "Select start date"}</Text>
-              </TouchableOpacity>
-
-              <Text style={[modalStyles.label, { marginTop: 8 }]}>To</Text>
-              <TouchableOpacity
-                onPress={() => setShowToPicker(true)}
-                style={[modalStyles.input, { justifyContent: "center" }]}
-              >
-                <Text>{toDate || "Select end date"}</Text>
-              </TouchableOpacity>
-
-              <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
-                <Pressable onPress={() => setShowStatementModal(false)} style={modalStyles.buttonOutline}>
-                  <Text style={modalStyles.buttonOutlineText}>Cancel</Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={handleDownloadStatement}
-                  style={[modalStyles.buttonPrimary, processingStatement ? { opacity: 0.6 } : {}]}
-                  disabled={processingStatement}
-                >
-                  <Text style={modalStyles.buttonPrimaryText}>
-                    {processingStatement ? "Preparing..." : "Download"}
-                  </Text>
-                </Pressable>
-              </View>
-
-              {/* Date Pickers */}
-              {DateTimePickerComponent && showFromPicker && (
-                <DateTimePickerComponent
-                  value={fromDate ? new Date(fromDate) : new Date()}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={(event: any, selectedDate?: Date) => {
-                    setShowFromPicker(Platform.OS === "ios");
-                    if (selectedDate) {
-                      const yyyy = selectedDate.getFullYear();
-                      const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
-                      const dd = String(selectedDate.getDate()).padStart(2, "0");
-                      setFromDate(`${yyyy}-${mm}-${dd}`);
-                    }
-                  }}
-                />
-              )}
-              {DateTimePickerComponent && showToPicker && (
-                <DateTimePickerComponent
-                  value={toDate ? new Date(toDate) : new Date()}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={(event: any, selectedDate?: Date) => {
-                    setShowToPicker(Platform.OS === "ios");
-                    if (selectedDate) {
-                      const yyyy = selectedDate.getFullYear();
-                      const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
-                      const dd = String(selectedDate.getDate()).padStart(2, "0");
-                      setToDate(`${yyyy}-${mm}-${dd}`);
-                    }
-                  }}
-                />
-              )}
+                <Text style={modalStyles.buttonPrimaryText}>
+                  {processingPayment ? "Saving..." : "Confirm"}
+                </Text>
+              </Pressable>
             </View>
-          </KeyboardAvoidingView>
-        </Modal>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ========== Statement Range Modal ========== */}
+      <Modal visible={showStatementModal} animationType="fade" transparent>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={modalStyles.container}
+        >
+          <View style={[modalStyles.inner, { marginBottom: Platform.OS === "ios" ? 34 : 0 }]}>
+            <Text style={modalStyles.title}>Download Statement</Text>
+            <Text style={modalStyles.label}>From</Text>
+            <TouchableOpacity
+              onPress={() => setShowFromPicker(true)}
+              style={[modalStyles.input, { justifyContent: "center" }]}
+            >
+              <Text>{fromDate || "Select start date"}</Text>
+            </TouchableOpacity>
+
+            <Text style={[modalStyles.label, { marginTop: 8 }]}>To</Text>
+            <TouchableOpacity
+              onPress={() => setShowToPicker(true)}
+              style={[modalStyles.input, { justifyContent: "center" }]}
+            >
+              <Text>{toDate || "Select end date"}</Text>
+            </TouchableOpacity>
+
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
+              <Pressable
+                onPress={() => setShowStatementModal(false)}
+                style={modalStyles.buttonOutline}
+              >
+                <Text style={modalStyles.buttonOutlineText}>Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={handleDownloadStatement}
+                style={[modalStyles.buttonPrimary, processingStatement ? { opacity: 0.6 } : {}]}
+                disabled={processingStatement}
+              >
+                <Text style={modalStyles.buttonPrimaryText}>
+                  {processingStatement ? "Preparing..." : "Download"}
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Date Pickers */}
+            {DateTimePickerComponent && showFromPicker && (
+              <DateTimePickerComponent
+                value={fromDate ? new Date(fromDate) : new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={(event: any, selectedDate?: Date) => {
+                  setShowFromPicker(Platform.OS === "ios");
+                  if (selectedDate) {
+                    const yyyy = selectedDate.getFullYear();
+                    const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                    const dd = String(selectedDate.getDate()).padStart(2, "0");
+                    setFromDate(`${yyyy}-${mm}-${dd}`);
+                  }
+                }}
+              />
+            )}
+            {DateTimePickerComponent && showToPicker && (
+              <DateTimePickerComponent
+                value={toDate ? new Date(toDate) : new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={(event: any, selectedDate?: Date) => {
+                  setShowToPicker(Platform.OS === "ios");
+                  if (selectedDate) {
+                    const yyyy = selectedDate.getFullYear();
+                    const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                    const dd = String(selectedDate.getDate()).padStart(2, "0");
+                    setToDate(`${yyyy}-${mm}-${dd}`);
+                  }
+                }}
+              />
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 };

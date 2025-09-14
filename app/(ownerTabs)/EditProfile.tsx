@@ -25,7 +25,6 @@ export default function EditProfile() {
     email: "",
     phone: "",
     shopName: "",
-    address: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -47,13 +46,17 @@ export default function EditProfile() {
           email: user.email || "",
           phone: data.phone || "",
           shopName: data.shopName || "",
-          address: data.address || "",
         });
         setProfileImage(data.photoURL || user.photoURL || null);
       }
     } catch (error) {
       console.error("Error loading user data:", error);
     }
+  };
+
+  const validateEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   };
 
   const pickImage = async () => {
@@ -101,6 +104,11 @@ export default function EditProfile() {
       return;
     }
 
+    if (!validateEmail(formData.email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+    
     setLoading(true);
     try {
       const user = auth.currentUser;
@@ -116,8 +124,8 @@ export default function EditProfile() {
       await updateDoc(doc(db, "owners", user.uid), {
         name: formData.name,
         phone: formData.phone,
+        email: formData.email,
         shopName: formData.shopName,
-        address: formData.address,
         photoURL: profileImage,
         updatedAt: new Date(),
       });
@@ -162,26 +170,32 @@ export default function EditProfile() {
             value={formData.name}
             onChangeText={(text) => setFormData({ ...formData, name: text })}
             placeholder="Enter your full name"
+            placeholderTextColor="#9CA3AF"
           />
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={styles.input}
             value={formData.email}
-            editable={false}
-            placeholder="Email (cannot be changed)"
+            onChangeText={(text) => setFormData({ ...formData, email: text })}
+            placeholder="Email"
+            placeholderTextColor="#9CA3AF"
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Phone Number</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, styles.disabledInput]}
             value={formData.phone}
+            editable={false}
             onChangeText={(text) => setFormData({ ...formData, phone: text })}
             placeholder="Enter phone number"
+            placeholderTextColor="#9CA3AF"
             keyboardType="phone-pad"
           />
         </View>
@@ -193,18 +207,7 @@ export default function EditProfile() {
             value={formData.shopName}
             onChangeText={(text) => setFormData({ ...formData, shopName: text })}
             placeholder="Enter shop name"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={formData.address}
-            onChangeText={(text) => setFormData({ ...formData, address: text })}
-            placeholder="Enter shop address"
-            multiline
-            numberOfLines={3}
+            placeholderTextColor="#9CA3AF"
           />
         </View>
 

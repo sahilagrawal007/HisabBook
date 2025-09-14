@@ -35,11 +35,6 @@ export default function CustomerHomeScreen() {
   const [previousNotificationCount, setPreviousNotificationCount] = useState(0);
   const router = useRouter();
 
-  // Function to show notifications modal
-  const showNotificationsModal = () => {
-    setShowNotifications(true);
-  };
-
   // Function to mark notification as read
   const markNotificationAsRead = async (notificationId: string) => {
     try {
@@ -95,97 +90,6 @@ export default function CustomerHomeScreen() {
     } catch (error) {
       setNotifications([]);
       setUnreadCount(0);
-    }
-  };
-
-  // Test function to manually check notifications
-  const testNotifications = async () => {
-    const user = getAuth().currentUser;
-    if (!user) {
-      Alert.alert("Error", "No authenticated user");
-      return;
-    }
-
-    try {
-      // Test direct Firestore query
-      const notificationsRef = collection(db, "notifications");
-      const snapshot = await getDocs(notificationsRef);
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-      });
-
-      Alert.alert(
-        "Test Complete",
-        `Found ${snapshot.size} total notifications. Check console for details.`
-      );
-    } catch (error) {
-      Alert.alert("Test Failed", "Check console for error details.");
-    }
-  };
-
-  // Function to manually recalculate analytics
-  const recalculateAnalytics = async () => {
-    const user = getAuth().currentUser;
-    if (!user) {
-      Alert.alert("Error", "No authenticated user");
-      return;
-    }
-
-    try {
-      // Get current joined shops
-      const customerDoc = await getDoc(doc(db, "customers", user.uid));
-      if (!customerDoc.exists()) {
-        Alert.alert("Error", "Customer profile not found");
-        return;
-      }
-
-      const customerData = customerDoc.data();
-      const joinedShops: string[] = customerData.shopsJoined || [];
-
-      if (joinedShops.length === 0) {
-        Alert.alert("No Shops", "You are not joined to any shops yet");
-        return;
-      }
-
-      // Fetch transactions manually
-      const txnQuery = query(
-        collection(db, "transactions"),
-        where("customerId", "==", user.uid),
-        where("shopId", "in", joinedShops)
-      );
-
-      const snapshot = await getDocs(txnQuery);
-      let totalPaid = 0;
-      let totalAdvance = 0;
-      let totalDue = 0;
-
-      snapshot.forEach((doc) => {
-        const txn = doc.data();
-        const amount = Number(txn.amount) || 0;
-
-        if (txn.type === "paid") {
-          totalPaid += amount;
-        } else if (txn.type === "due") {
-          totalDue += amount;
-        } else if (txn.type === "advance") {
-          totalAdvance += amount;
-        }
-      });
-
-      const netDue = Math.max(totalDue - (totalPaid + totalAdvance), 0);
-      const totalSpent = totalPaid + totalAdvance;
-
-      // Update state
-      setDue(netDue);
-      setSpent(totalSpent);
-
-      Alert.alert(
-        "Recalculation Complete",
-        `New values:\nTotal Spent: ₹${totalSpent}\nDue: ₹${netDue}\nCheck console for details.`
-      );
-    } catch (error) {
-      Alert.alert("Recalculation Failed", "Check console for error details.");
     }
   };
 
@@ -340,6 +244,34 @@ export default function CustomerHomeScreen() {
     };
   }, []);
 
+    useFocusEffect(
+      useCallback(() => {
+        const user = getAuth().currentUser;
+        if (!user) return;
+
+        const refetch = async () => {
+          const customerDoc = await getDoc(doc(db, "customers", user.uid));
+          if (!customerDoc.exists()) return;
+
+          const customerData = customerDoc.data();
+          setCustomer(customerData);
+          setProfileImage(customerData.photoURL || null);
+
+          const joinedShops: string[] = customerData.shopsJoined || [];
+          const shopsData: any[] = [];
+          for (const shopId of joinedShops) {
+            const shopDoc = await getDoc(doc(db, "shops", shopId));
+            if (shopDoc.exists()) {
+              shopsData.push({ id: shopId, ...shopDoc.data() });
+            }
+          }
+          setShops(shopsData);
+        };
+
+        refetch();
+      }, [])
+    );
+    
   return (
     <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#F7F7F7]">
       <ScrollView contentContainerStyle={{ padding: 16 }}>

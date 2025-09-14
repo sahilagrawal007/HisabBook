@@ -113,12 +113,12 @@ export default function CustomersScreen() {
         </TouchableOpacity>
 
         <Text className="text-2xl font-bold text-gray-900 mb-6">All Customers</Text>
-        
+
         <TextInput
           className="mb-3 px-4 py-4 bg-white rounded-xl border border-gray-200 text-gray-900 text-base"
           style={{ paddingTop: 10, paddingBottom: 15 }}
           placeholder="Search by customer name..."
-          placeholderTextColor="gray"
+          placeholderTextColor="#9CA3AF"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -150,7 +150,6 @@ export default function CustomersScreen() {
                     <Feather name="user" size={30} color="#3B82F6" />
                     <View>
                       <Text className="text-gray-700 font-medium ml-2">{cust.name}</Text>
-                      
                     </View>
                   </View>
                   <View className="items-end">

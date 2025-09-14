@@ -196,6 +196,7 @@ const AddTransaction: React.FC = () => {
           value={qty > 0 ? String(qty) : ""}
           onChangeText={(val) => handleQuantityChange(item.id, val)}
           placeholder="0"
+          placeholderTextColor="#9CA3AF"
         />
 
         <TouchableOpacity
@@ -236,7 +237,7 @@ const AddTransaction: React.FC = () => {
                   onChangeText={setSearchTerm}
                   style={{ paddingTop: 5, paddingBottom: 5 }}
                   placeholder="Search products..."
-                  placeholderTextColor="gray"
+                  placeholderTextColor="#9CA3AF"
                   className="ml-2 flex-1"
                   returnKeyType="search"
                   onSubmitEditing={() => Keyboard.dismiss()}

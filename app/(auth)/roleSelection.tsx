@@ -16,7 +16,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { auth, db } from "../../firebaseConfig";
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import Feather from "react-native-vector-icons/Feather";
 import { Owner, Shop } from "@/types";
 
 export default function RoleSelection() {
@@ -27,6 +26,7 @@ export default function RoleSelection() {
   const [shopName, setShopName] = useState("");
   const [pincode, setPincode] = useState("");
   const [city, setCity] = useState("");
+  const [state, setState] = useState("");
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -52,6 +52,7 @@ export default function RoleSelection() {
         const data = await response.json();
         if (data && data[0] && data[0].PostOffice && data[0].PostOffice[0]) {
           setCity(data[0].PostOffice[0].District);
+          setState(data[0].PostOffice[0].State);
         }
       } catch (error) {
         console.error("Failed to fetch city from pincode:", error);
@@ -103,6 +104,7 @@ export default function RoleSelection() {
           customers: [],
           pincode,
           city,
+          state,
           address,
           createdAt: now,
           updatedAt: now,
@@ -261,6 +263,16 @@ export default function RoleSelection() {
                             placeholderTextColor="#9CA3AF"
                           />
                         </View>
+                        <Text className="text-blue-800 text-sm font-medium mb-2 ml-1">State</Text>
+                        <View className="bg-gray-200 rounded-xl border border-blue-300 shadow-sm mb-4">
+                          <TextInput
+                            style={[styles.input, { color: "#6B7280" }]}
+                            value={state}
+                            editable={false}
+                            placeholder="State will be auto-detected"
+                            placeholderTextColor="#9CA3AF"
+                          />
+                        </View>
                         <Text className="text-blue-800 text-sm font-medium mb-2 ml-1">
                           Address *
                         </Text>
@@ -268,6 +280,7 @@ export default function RoleSelection() {
                           <TextInput
                             style={styles.input}
                             placeholder="Shop address"
+                            placeholderTextColor="#9CA3AF"
                             value={address}
                             onChangeText={setAddress}
                           />
@@ -283,6 +296,7 @@ export default function RoleSelection() {
                           <TextInput
                             style={styles.input}
                             placeholder="Your address"
+                            placeholderTextColor="#9CA3AF"
                             value={address}
                             onChangeText={setAddress}
                           />

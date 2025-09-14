@@ -143,11 +143,14 @@ export default function CustomersScreen() {
         {/* Add Product Section */}
         <View className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-100">
           <Text className="text-gray-700 text-lg font-bold mb-2">+ Add New Product</Text>
-          <Text className="text-gray-500 text-sm mb-4">Manage all your shop's products and prices</Text>
+          <Text className="text-gray-500 text-sm mb-4">
+            Manage all your shop's products and prices
+          </Text>
 
           <Text className="text-gray-400 mb-2 text-sm">Product Name</Text>
           <TextInput
             placeholder="e.g. Tea"
+            placeholderTextColor="#9CA3AF"
             value={productName}
             onChangeText={setProductName}
             className="border border-gray-300 rounded-lg px-3 py-3 mb-3 text-gray-700"
@@ -156,6 +159,7 @@ export default function CustomersScreen() {
           <Text className="text-gray-400 mb-2 text-sm">Price (₹)</Text>
           <TextInput
             placeholder="e.g. 10"
+            placeholderTextColor="#9CA3AF"
             value={price}
             onChangeText={setPrice}
             keyboardType="numeric"
@@ -177,7 +181,7 @@ export default function CustomersScreen() {
         {/* Products List Section */}
         <View className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-100">
           <Text className="text-gray-700 text-lg font-bold mb-3">Your Products</Text>
-          
+
           {/* Search Bar */}
           <View className="mb-3">
             <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
@@ -185,9 +189,9 @@ export default function CustomersScreen() {
               <TextInput
                 className="flex-1 ml-2 text-gray-700"
                 placeholder="Search products..."
+                placeholderTextColor="#9CA3AF"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                placeholderTextColor="#999"
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery("")}>
@@ -213,10 +217,18 @@ export default function CustomersScreen() {
                   <Text className="text-gray-500 mr-4">{p.price}</Text>
                   <TouchableOpacity
                     onPress={() =>
-                      Alert.alert("Delete Product", `Are you sure you want to delete "${p.name}"?`, [
-                        { text: "Cancel", style: "cancel" },
-                        { text: "Delete", style: "destructive", onPress: () => deleteProduct(p.id) },
-                      ])
+                      Alert.alert(
+                        "Delete Product",
+                        `Are you sure you want to delete "${p.name}"?`,
+                        [
+                          { text: "Cancel", style: "cancel" },
+                          {
+                            text: "Delete",
+                            style: "destructive",
+                            onPress: () => deleteProduct(p.id),
+                          },
+                        ]
+                      )
                     }
                     className="mx-1"
                   >
@@ -228,7 +240,9 @@ export default function CustomersScreen() {
           ) : (
             <View className="py-6">
               <Text className="text-gray-500 text-center">
-                {searchQuery.trim() ? `No products found for "${searchQuery}"` : "No products added yet"}
+                {searchQuery.trim()
+                  ? `No products found for "${searchQuery}"`
+                  : "No products added yet"}
               </Text>
             </View>
           )}

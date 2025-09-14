@@ -1,4 +1,3 @@
-// app/(ownerTabs)/qr.tsx
 import { useEffect, useRef, useState } from "react";
 import { View, Text, Alert, Button, Share, Platform, TouchableOpacity } from "react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -7,7 +6,7 @@ import Clipboard from "expo-clipboard";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
 export default function OwnerQRScreen() {
@@ -17,7 +16,7 @@ export default function OwnerQRScreen() {
   const qrRef = useRef<any>(null);
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts();  
   }, []);
 
   const fetchProducts = async () => {
@@ -43,7 +42,7 @@ export default function OwnerQRScreen() {
       try {
         const fileUri = FileSystem.cacheDirectory + "qr-code.png";
         await FileSystem.writeAsStringAsync(fileUri, dataURL, {
-          encoding: FileSystem.EncodingType.Base64,
+          encoding: "base64",
         });
         // Share the image file
         await Sharing.shareAsync(fileUri, {

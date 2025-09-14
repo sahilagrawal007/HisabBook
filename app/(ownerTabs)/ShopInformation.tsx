@@ -1,267 +1,325 @@
-import { useRouter } from 'expo-router';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
-import { auth, db } from '../../firebaseConfig';
+import { useRouter } from "expo-router";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import Feather from "react-native-vector-icons/Feather";
+import { auth, db } from "../../firebaseConfig";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ShopInformation() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
   const [formData, setFormData] = useState({
-    shopName: '',
-    shopType: '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    phone: '',
-    email: '',
-    gstNumber: '',
-    openingTime: '',
-    closingTime: '',
+    shopName: "",
+    shopType: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+    phone: "",
+    gstNumber: "",
+    openingTime: "",
+    closingTime: "",
     isOpen: true,
-    description: ''
+    description: "",
   });
 
   useEffect(() => {
     loadShopData();
   }, []);
 
+  const detectCityFromPincode = async (pincode: string) => {
+    if (pincode.length === 6) {
+      try {
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await response.json();
+        if (data && data[0] && data[0].PostOffice && data[0].PostOffice[0]) {
+          setCity(data[0].PostOffice[0].District);
+          setState(data[0].PostOffice[0].State);
+        }
+      } catch (error) {
+        console.error("Failed to fetch city from pincode:", error);
+      }
+    }
+  };
+
   const loadShopData = async () => {
     try {
       const user = auth.currentUser;
       if (!user) return;
 
-      const shopDoc = await getDoc(doc(db, 'owners', user.uid));
+      const shopDoc = await getDoc(doc(db, "shops", user.uid));
       if (shopDoc.exists()) {
         const data = shopDoc.data();
         setFormData({
-          shopName: data.shopName || '',
-          shopType: data.shopType || '',
-          address: data.address || '',
-          city: data.city || '',
-          state: data.state || '',
-          pincode: data.pincode || '',
-          phone: data.phone || '',
-          email: data.email || user.email || '',
-          gstNumber: data.gstNumber || '',
-          openingTime: data.openingTime || '',
-          closingTime: data.closingTime || '',
+          shopName: data.name || "",
+          shopType: data.shopType || "",
+          address: data.address || "",
+          city: data.city || "",
+          state: data.state || "",
+          pincode: data.pincode || "",
+          phone: data.phone || "",
+          gstNumber: data.gstNumber || "",
+          openingTime: data.openingTime || "",
+          closingTime: data.closingTime || "",
           isOpen: data.isOpen !== undefined ? data.isOpen : true,
-          description: data.description || ''
+          description: data.description || "",
         });
       }
     } catch (error) {
-      console.error('Error loading shop data:', error);
+      console.error("Error loading shop data:", error);
     }
   };
 
   const handleSave = async () => {
-    if (!formData.shopName.trim() || !formData.address.trim()) {
-      Alert.alert('Error', 'Shop Name and Address are required');
+    if (!formData.shopName.trim() || !formData.address.trim() || !formData.phone.trim()) {
+      Alert.alert("Error", "Shop Name, Address and Phone Number are required");
       return;
     }
 
     setLoading(true);
     try {
       const user = auth.currentUser;
-      if (!user) throw new Error('User not authenticated');
+      if (!user) throw new Error("User not authenticated");
 
-      await updateDoc(doc(db, 'owners', user.uid), {
-        shopName: formData.shopName,
+      await updateDoc(doc(db, "shops", user.uid), {
+        name: formData.shopName,
         shopType: formData.shopType,
         address: formData.address,
         city: formData.city,
         state: formData.state,
         pincode: formData.pincode,
-        phone: formData.phone,
-        email: formData.email,
+        phone: `+91${formData.phone}`,
         gstNumber: formData.gstNumber,
         openingTime: formData.openingTime,
         closingTime: formData.closingTime,
         isOpen: formData.isOpen,
         description: formData.description,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
 
-      Alert.alert('Success', 'Shop information updated successfully', [
-        { text: 'OK', onPress: () => router.back() }
+      Alert.alert("Success", "Shop information updated successfully", [
+        { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => router.navigate('/settings')} style={styles.backButton}>
-        <Feather name="arrow-left" size={24} color="#333" />
-      </TouchableOpacity>
-      
-      <Text style={styles.title}>Shop Information</Text>
-      
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Shop Name *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.shopName}
-            onChangeText={(text) => setFormData({...formData, shopName: text})}
-            placeholder="Enter shop name"
-          />
-        </View>
+    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#F7F7F7]">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        style={{ flex: 1 }}
+      >
+        <ScrollView style={styles.container}>
+          <TouchableOpacity onPress={() => router.navigate("/settings")} style={styles.backButton}>
+            <Feather name="arrow-left" size={24} color="#333" />
+          </TouchableOpacity>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Shop Type</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.shopType}
-            onChangeText={(text) => setFormData({...formData, shopType: text})}
-            placeholder="e.g., Grocery, Electronics, etc."
-          />
-        </View>
+          <Text style={styles.title}>Shop Information</Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Address *</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={formData.address}
-            onChangeText={(text) => setFormData({...formData, address: text})}
-            placeholder="Enter complete address"
-            multiline
-            numberOfLines={3}
-          />
-        </View>
+          <View style={styles.form}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Shop Name *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.shopName}
+                onChangeText={(text) => setFormData({ ...formData, shopName: text })}
+                placeholder="Enter shop name"
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
 
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, styles.halfWidth]}>
-            <Text style={styles.label}>City</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.city}
-              onChangeText={(text) => setFormData({...formData, city: text})}
-              placeholder="City"
-            />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Shop Type</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.shopType}
+                onChangeText={(text) => setFormData({ ...formData, shopType: text })}
+                placeholder="e.g., Grocery, Electronics, etc."
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Address *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.address}
+                onChangeText={(text) => setFormData({ ...formData, address: text })}
+                placeholder="Enter complete address"
+                placeholderTextColor="#9CA3AF"
+                numberOfLines={3}
+              />
+            </View>
+
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.halfWidth]}>
+                <Text style={styles.label}>Pincode</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.pincode}
+                  onChangeText={(text) => {
+                    setFormData({ ...formData, pincode: text });
+                    detectCityFromPincode(text);
+                  }}
+                  placeholder="Pincode"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={[styles.inputGroup, styles.halfWidth]}>
+                <Text style={styles.label}>State</Text>
+                <TextInput
+                  style={[styles.input, styles.disabledInput]}
+                  value={state}
+                  editable={false}
+                  onChangeText={(text) => setFormData({ ...formData, state: text })}
+                  placeholder="State"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.halfWidth]}>
+                <Text style={styles.label}>City</Text>
+                <TextInput
+                  style={[styles.input, styles.disabledInput]}
+                  value={city}
+                  editable={false}
+                  onChangeText={(text) => setFormData({ ...formData, city: text })}
+                  placeholder="City"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+              <View style={[styles.inputGroup, styles.halfWidth]}>
+                <Text style={styles.label}>Shop Status</Text>
+                {/* Label + switch in a row */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderWidth: 1,
+                    borderColor: "#ddd",
+                    borderRadius: 8,
+                    padding: 12,
+                    backgroundColor: "white",
+                  }}
+                >
+                  <Text style={styles.switchLabel}>{formData.isOpen ? "Open" : "Closed"}</Text>
+                  <Switch
+                    value={formData.isOpen}
+                    onValueChange={(value) => setFormData({ ...formData, isOpen: value })}
+                    trackColor={{ false: "#767577", true: "#81b0ff" }}
+                    thumbColor={formData.isOpen ? "#007AFF" : "#f4f3f4"}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>GST Number</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.gstNumber}
+                onChangeText={(text) => setFormData({ ...formData, gstNumber: text })}
+                placeholder="GST Number (optional)"
+                placeholderTextColor="#9CA3AF"
+                autoCapitalize="characters"
+              />
+            </View>
+
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.halfWidth]}>
+                <Text style={styles.label}>Opening Time</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.openingTime}
+                  onChangeText={(text) => setFormData({ ...formData, openingTime: text })}
+                  placeholder="e.g., 9:00 AM"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+              <View style={[styles.inputGroup, styles.halfWidth]}>
+                <Text style={styles.label}>Closing Time</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.closingTime}
+                  onChangeText={(text) => setFormData({ ...formData, closingTime: text })}
+                  placeholder="e.g., 8:00 PM"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Phone</Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={styles.prefixBox}>
+                  <Text style={{ fontSize: 16 }}>+91</Text>
+                </View>
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  value={formData.phone}
+                  onChangeText={(text) => {
+                    let cleaned = text.replace(/\D/g, "");
+                    if (cleaned.startsWith("91") && cleaned.length > 10) {
+                      cleaned = cleaned.slice(2);
+                    }
+                    if (cleaned.length > 10) cleaned = cleaned.slice(0, 10);
+
+                    setFormData({ ...formData, phone: cleaned });
+                  }}
+                  placeholder="Phone number"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.description}
+                onChangeText={(text) => setFormData({ ...formData, description: text })}
+                placeholder="Brief description about your shop"
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveButton, loading && styles.disabledButton]}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              <Text style={styles.saveButtonText}>
+                {loading ? "Saving..." : "Save Shop Information"}
+              </Text>
+            </TouchableOpacity>
           </View>
-          <View style={[styles.inputGroup, styles.halfWidth]}>
-            <Text style={styles.label}>State</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.state}
-              onChangeText={(text) => setFormData({...formData, state: text})}
-              placeholder="State"
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, styles.halfWidth]}>
-            <Text style={styles.label}>Pincode</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.pincode}
-              onChangeText={(text) => setFormData({...formData, pincode: text})}
-              placeholder="Pincode"
-              keyboardType="numeric"
-            />
-          </View>
-          <View style={[styles.inputGroup, styles.halfWidth]}>
-            <Text style={styles.label}>Phone</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.phone}
-              onChangeText={(text) => setFormData({...formData, phone: text})}
-              placeholder="Phone number"
-              keyboardType="phone-pad"
-            />
-          </View>
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.email}
-            onChangeText={(text) => setFormData({...formData, email: text})}
-            placeholder="Shop email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>GST Number</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.gstNumber}
-            onChangeText={(text) => setFormData({...formData, gstNumber: text})}
-            placeholder="GST Number (optional)"
-            autoCapitalize="characters"
-          />
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, styles.halfWidth]}>
-            <Text style={styles.label}>Opening Time</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.openingTime}
-              onChangeText={(text) => setFormData({...formData, openingTime: text})}
-              placeholder="e.g., 9:00 AM"
-            />
-          </View>
-          <View style={[styles.inputGroup, styles.halfWidth]}>
-            <Text style={styles.label}>Closing Time</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.closingTime}
-              onChangeText={(text) => setFormData({...formData, closingTime: text})}
-              placeholder="e.g., 8:00 PM"
-            />
-          </View>
-        </View>
-
-        <View style={styles.switchContainer}>
-          <Text style={styles.label}>Shop Status</Text>
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>
-              {formData.isOpen ? 'Open' : 'Closed'}
-            </Text>
-            <Switch
-              value={formData.isOpen}
-              onValueChange={(value) => setFormData({...formData, isOpen: value})}
-              trackColor={{ false: '#767577', true: '#81b0ff' }}
-              thumbColor={formData.isOpen ? '#007AFF' : '#f4f3f4'}
-            />
-          </View>
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={formData.description}
-            onChangeText={(text) => setFormData({...formData, description: text})}
-            placeholder="Brief description about your shop"
-            multiline
-            numberOfLines={4}
-          />
-        </View>
-
-        <TouchableOpacity 
-          style={[styles.saveButton, loading && styles.disabledButton]} 
-          onPress={handleSave}
-          disabled={loading}
-        >
-          <Text style={styles.saveButtonText}>
-            {loading ? 'Saving...' : 'Save Shop Information'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -306,7 +364,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   textArea: {
-    height: 80,
+    height: 50,
     textAlignVertical: "top",
   },
   row: {
@@ -344,4 +402,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-}); 
+  disabledInput: {
+    backgroundColor: "#f5f5f5",
+    color: "#666",
+  },
+  prefixBox: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: "white",
+    marginRight: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});

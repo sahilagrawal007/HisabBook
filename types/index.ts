@@ -28,6 +28,7 @@ export interface Shop {
   link: string;
   pincode: string;
   city: string;
+  state: string;
   address: string;
   customers: string[];
   createdAt: Date;

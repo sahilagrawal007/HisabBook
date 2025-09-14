@@ -133,12 +133,14 @@ export default function EditProfile() {
         <TextInput
           style={styles.input}
           placeholder="Full Name"
+          placeholderTextColor="#9CA3AF"
           value={name}
           onChangeText={setName}
         />
         <TextInput
           style={styles.input}
           placeholder="Phone Number"
+          placeholderTextColor="#9CA3AF"
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
