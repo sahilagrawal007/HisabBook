@@ -2,6 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import {
+
   collection,
   doc,
   getDoc,
@@ -13,6 +14,7 @@ import {
 } from "firebase/firestore";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feather from "react-native-vector-icons/Feather";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -34,6 +36,9 @@ export default function CustomerHomeScreen() {
   const [toastMessage, setToastMessage] = useState("");
   const [previousNotificationCount, setPreviousNotificationCount] = useState(0);
   const router = useRouter();
+  const [shopsListenerMap] = useState<Record<string, () => void>>({});
+  const [shopDataMap] = useState<Record<string, any>>({});
+  const [lastJoinedShops, setLastJoinedShops] = useState<string[]>([]);
 
   // Function to mark notification as read
   const markNotificationAsRead = async (notificationId: string) => {
@@ -110,27 +115,71 @@ export default function CustomerHomeScreen() {
       setProfileImage(customerData.photoURL || null);
 
       // Listen for customer profile changes
-      customerUnsubscribe = onSnapshot(doc(db, "customers", user.uid), (doc) => {
+      customerUnsubscribe = onSnapshot(doc(db, "customers", user.uid), (customerSnap) => {
         // Check if user is still authenticated before processing data
         if (!getAuth().currentUser) return;
 
         if (doc.exists()) {
           const data = doc.data();
+
           setCustomer(data);
           setProfileImage(data.photoURL || null);
+
+          // React to joined shops changes in real-time
+          const joined: string[] = (data as any).shopsJoined || [];
+          const changed = joined.length !== lastJoinedShops.length || joined.some((id, i) => id !== lastJoinedShops[i]);
+          if (changed) {
+            // Cleanup existing shop listeners that are not in the new list
+            Object.keys(shopsListenerMap).forEach((shopId) => {
+              if (!joined.includes(shopId)) {
+                try { shopsListenerMap[shopId]?.(); } catch {}
+                delete shopsListenerMap[shopId];
+                delete shopDataMap[shopId];
+              }
+            });
+
+            // Attach listeners for any new shops
+            joined.forEach((shopId) => {
+              if (!shopsListenerMap[shopId]) {
+                const unsub = onSnapshot(doc(db, "shops", shopId), (shopSnap) => {
+                  if (shopSnap.exists()) {
+                    shopDataMap[shopId] = { id: shopId, ...shopSnap.data() };
+                  } else {
+                    delete shopDataMap[shopId];
+                  }
+                  setShops(Object.values(shopDataMap));
+                });
+                shopsListenerMap[shopId] = unsub;
+              }
+            });
+
+            setLastJoinedShops(joined);
+            setShops(Object.values(shopDataMap));
+          }
         }
       });
 
       const joinedShops: string[] = customerData.shopsJoined || [];
-      const shopsData = [];
-
-      for (const shopId of joinedShops) {
-        const shopDoc = await getDoc(doc(db, "shops", shopId));
-        if (shopDoc.exists()) {
-          shopsData.push({ id: shopId, ...shopDoc.data() });
-        }
-      }
-      setShops(shopsData);
+      // Initialize shops real-time listeners on first load
+      setLastJoinedShops(joinedShops);
+      // Ensure clean slate
+      Object.keys(shopsListenerMap).forEach((shopId) => {
+        try { shopsListenerMap[shopId]?.(); } catch {}
+        delete shopsListenerMap[shopId];
+        delete shopDataMap[shopId];
+      });
+      joinedShops.forEach((shopId) => {
+        const unsub = onSnapshot(doc(db, "shops", shopId), (shopSnap) => {
+          if (shopSnap.exists()) {
+            shopDataMap[shopId] = { id: shopId, ...shopSnap.data() };
+          } else {
+            delete shopDataMap[shopId];
+          }
+          setShops(Object.values(shopDataMap));
+        });
+        shopsListenerMap[shopId] = unsub;
+      });
+      setShops(Object.values(shopDataMap));
 
       // Listen for notifications from joined shops
       if (joinedShops.length > 0) {
@@ -241,6 +290,11 @@ export default function CustomerHomeScreen() {
       if (unsubscribe) unsubscribe();
       if (customerUnsubscribe) customerUnsubscribe();
       if (notificationsUnsubscribe) notificationsUnsubscribe();
+      // Cleanup all shop listeners
+      Object.keys(shopsListenerMap).forEach((shopId) => {
+        try { shopsListenerMap[shopId]?.(); } catch {}
+        delete shopsListenerMap[shopId];
+      });
     };
   }, []);
 

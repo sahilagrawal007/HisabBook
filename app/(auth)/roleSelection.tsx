@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { doc, setDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { arrayUnion, doc, setDoc } from "firebase/firestore";
 import { LinearGradient } from "expo-linear-gradient";
 import { auth, db } from "../../firebaseConfig";
@@ -84,10 +88,12 @@ export default function RoleSelection() {
         const shopLink = generateShopLink(shopName);
         const ownerData: Owner = {
           uid: currentUser.uid,
+
           name,
           email: currentUser.email || "",
           phone: currentUser.phoneNumber, // Store full number with country code
           shopName,
+
           shopLink,
           createdAt: now,
           updatedAt: now,
@@ -102,14 +108,17 @@ export default function RoleSelection() {
           name: shopName,
           link: shopLink,
           customers: [],
+
           pincode,
           city,
           state,
           address,
+
           createdAt: now,
           updatedAt: now,
         };
         await setDoc(doc(db, "shops", currentUser.uid), shopData);
+
 
         router.replace("/(ownerTabs)");
       } else {
