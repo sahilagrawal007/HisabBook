@@ -2,29 +2,29 @@ import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  serverTimestamp,
-  where
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    onSnapshot,
+    query,
+    serverTimestamp,
+    where
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feather from "react-native-vector-icons/Feather";
@@ -48,7 +48,7 @@ const JoinedShopDetails: React.FC = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showShopInfoModal, setShowShopInfoModal] = useState(false);
-  
+
   // Invoice/Statement generation states
   const [showStatementModal, setShowStatementModal] = useState(false);
   const [fromDate, setFromDate] = useState<string>("");
@@ -534,10 +534,12 @@ const JoinedShopDetails: React.FC = () => {
               <Text className="text-xl font-bold text-gray-900 mb-1">
                 {shopDetails?.name || "Shop"}
               </Text>
+
               {shopInfo?.shopName || shopDetails?.name || shopDetails?.address ? (
                 <TouchableOpacity
                   onPress={() => setShowShopInfoModal(true)}
                   className="mt-2 py-2 bg-blue-500 rounded-lg"
+
                 >
                   <Text className="text-white text-center font-semibold">View Shop Details</Text>
                 </TouchableOpacity>
@@ -570,6 +572,7 @@ const JoinedShopDetails: React.FC = () => {
                   </View>
                 </View>
               </View>
+
             </View>
 
             {/* Product List */}
@@ -890,10 +893,12 @@ const JoinedShopDetails: React.FC = () => {
                   {shopInfo?.name}
                 </Text>
               )}
+
               {!!shopDetails?.phone && (
                 <Text style={{ fontSize: 14 }}>
                   <Text style={{ fontWeight: "700" }}>Phone: </Text>
                   {shopDetails?.phone}
+
                 </Text>
               )}
               {!!shopInfo?.email && (
@@ -901,7 +906,7 @@ const JoinedShopDetails: React.FC = () => {
                   <Text style={{ fontWeight: "700" }}>Email: </Text>
                   {shopInfo?.email}
                 </Text>
-              )}
+
               {!!shopDetails?.address && (
                 <Text style={{ fontSize: 14 }}>
                   <Text style={{ fontWeight: "700" }}>Address: </Text>
@@ -959,10 +964,12 @@ const JoinedShopDetails: React.FC = () => {
             </View>
 
             <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
+
               <Pressable
                 onPress={() => setShowShopInfoModal(false)}
                 style={modalStyles.buttonPrimary}
               >
+
                 <Text style={modalStyles.buttonPrimaryText}>Close</Text>
               </Pressable>
             </View>
