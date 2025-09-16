@@ -122,7 +122,7 @@ export default function ShopInformation() {
   };
 
   return (
-    <SafeAreaView edges={["top", "left", "right"]} className="flex-1 bg-[#F7F7F7]">
+    <SafeAreaView edges={["left", "right"]} className="flex-1 bg-[#F7F7F7]">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}

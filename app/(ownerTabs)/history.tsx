@@ -16,6 +16,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { auth, db } from "../../firebaseConfig";
 import { Transaction } from "../../types";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 
 interface TransactionWithCustomer extends Transaction {
   customerName?: string;
@@ -29,8 +30,13 @@ export default function OwnerHistory() {
   const [filter, setFilter] = useState<"all" | "paid" | "due">("all");
   const [customerFilter, setCustomerFilter] = useState<string>("");
   const [customerIdFilter, setCustomerIdFilter] = useState<string>("");
+  const isFocused = useIsFocused();
 
   useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+
     const user = auth.currentUser;
     if (!user) return;
 
@@ -90,7 +96,7 @@ export default function OwnerHistory() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [isFocused]);
 
   // Initialize customerId filter from route params
   useEffect(() => {
@@ -193,6 +199,7 @@ export default function OwnerHistory() {
           <TextInput
             style={styles.searchInput}
             placeholder="Search by customer name..."
+            placeholderTextColor="#9CA3AF"
             value={customerFilter}
             onChangeText={setCustomerFilter}
           />
@@ -301,7 +308,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#fff",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 14,

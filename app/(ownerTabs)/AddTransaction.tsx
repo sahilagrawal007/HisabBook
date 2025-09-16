@@ -137,7 +137,10 @@ const AddTransaction: React.FC = () => {
         {
           text: "OK",
           onPress: () => {
-            router.back();
+            router.replace({
+              pathname: "/(ownerTabs)/CustomerProfile",
+              params: { customerId, shopId},
+            });
           },
         },
       ]);

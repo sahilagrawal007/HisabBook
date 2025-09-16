@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import Feather from 'react-native-vector-icons/Feather';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import Feather from "react-native-vector-icons/Feather";
 
 export default function OwnerTabsLayout() {
   return (
@@ -64,6 +64,12 @@ export default function OwnerTabsLayout() {
       />
       <Tabs.Screen
         name="AddTransaction"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="DownloadStatement"
         options={{
           href: null,
         }}
