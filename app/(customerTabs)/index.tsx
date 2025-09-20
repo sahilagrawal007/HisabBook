@@ -337,7 +337,7 @@ export default function CustomerHomeScreen() {
         <View className="flex-row justify-between items-center mb-6">
           <View className="flex-row items-center">
             <Icon name="storefront" size={30} color="#4B82F6" />
-            <Text className="text-xl font-bold text-gray-900 ml-2">ShopMunim</Text>
+            <Text className="text-xl font-bold text-gray-900 ml-2">HisabKitaab</Text>
           </View>
           <TouchableOpacity onPress={() => router.navigate("./notifications")} className="relative">
             <Icon name="notifications-active" size={30} color="#3B82F6" />

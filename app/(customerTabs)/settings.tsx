@@ -116,7 +116,7 @@ export default function CustomerSettings() {
             <Text style={styles.sectionTitle}>Order & Payment</Text>
             <TouchableOpacity
               style={styles.settingItem}
-              onPress={() => router.navigate("/(customerTabs)/history")}
+              onPress={() => router.navigate("./(customerTabs)/history")}
             >
               <Feather name="list" size={20} color="#555" style={styles.icon} />
               <Text style={styles.settingText}>Order History</Text>

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "ShopMunim",
-    "slug": "ShopMunim",
+    "name": "HisabKitaab",
+    "slug": "HisabKitaab",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "shopmunim",
+    "scheme": "hisabkitaab",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -29,7 +29,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow ShopMunim to access your camera to scan QR codes."
+          "cameraPermission": "Allow HisabKitaab to access your camera to scan QR codes."
         }
       ],
       "expo-router",

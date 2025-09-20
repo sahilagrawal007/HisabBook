@@ -89,7 +89,7 @@ export default function PhoneAuth() {
                 <View className="bg-blue-100 rounded-3xl p-6 mb-6">
                   <Icon name="storefront" size={60} color="#3B82F6" />
                 </View>
-                <Text className="text-4xl font-bold text-blue-900 mb-2">ShopMunim</Text>
+                <Text className="text-4xl font-bold text-blue-900 mb-2">HisabKitaab</Text>
                 <Text className="text-blue-700 text-lg text-center">
                   Your Smart Shop Management Solution
                 </Text>
