@@ -32,13 +32,14 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { db } from "../../firebaseConfig";
 
 interface RouteParams {
+  customerId: string;
   shopId: string;
 }
 
 const JoinedShopDetails: React.FC = () => {
   const route = useRoute();
   const router = useRouter();
-  const { shopId } = route.params as RouteParams;
+  const { customerId, shopId } = (route.params || {}) as RouteParams;
 
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
@@ -64,7 +65,7 @@ const JoinedShopDetails: React.FC = () => {
   useEffect(() => {
     const user = getAuth().currentUser;
     if (!user) return;
-
+    
     // Set up real-time listener for shop details
     const shopUnsubscribe = onSnapshot(doc(db, "shops", shopId), (shopDoc) => {
       // Check if user is still authenticated before processing data
@@ -648,13 +649,31 @@ const JoinedShopDetails: React.FC = () => {
               {/* Action Buttons - Below heading */}
               {transactions.length > 0 && (
                 <View className="flex-row justify-center gap-2 mb-3">
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={() => setShowStatementModal(true)}
                     className="bg-blue-500 px-3 py-2 rounded-lg"
                     style={{ minWidth: 140, alignItems: "center" }}
                   >
                     <Text className="text-white text-sm font-semibold">Download Statement</Text>
                   </TouchableOpacity>
+                   */}
+
+                  <TouchableOpacity
+                    className="bg-blue-500 rounded-lg py-2 px-3"
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(customerTabs)/DownloadStatement",
+                        params: { customerId, shopId },
+                      })
+                    }
+                    accessibilityLabel="download-statement"
+                    style={{ flex: 1, marginRight: 6, minWidth: "48%" }}
+                  >
+                    <Text className="text-white font-bold text-center text-sm">
+                      Download Statement
+                    </Text>
+                  </TouchableOpacity>
+
                   <TouchableOpacity
                     onPress={() => {
                       const currentShopName = shopDetails?.name || "";
