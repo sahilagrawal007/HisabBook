@@ -1,18 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, Alert, Button, Share, Platform, TouchableOpacity } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { useRouter } from "expo-router";
-import Clipboard from "expo-clipboard";
-import { getAuth } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { useEffect, useRef, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
 
 export default function OwnerQRScreen() {
   const [shopLink, setShopLink] = useState("null");

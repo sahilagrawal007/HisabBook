@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { doc, setDoc } from "firebase/firestore";
+import { arrayUnion, doc, setDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
@@ -15,10 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { arrayUnion, doc, setDoc } from "firebase/firestore";
-import { LinearGradient } from "expo-linear-gradient";
 import { auth, db } from "../../firebaseConfig";
-import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Owner, Shop } from "@/types";
 

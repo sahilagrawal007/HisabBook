@@ -539,7 +539,6 @@ const JoinedShopDetails: React.FC = () => {
                 <TouchableOpacity
                   onPress={() => setShowShopInfoModal(true)}
                   className="mt-2 py-2 bg-blue-500 rounded-lg"
-
                 >
                   <Text className="text-white text-center font-semibold">View Shop Details</Text>
                 </TouchableOpacity>
@@ -572,7 +571,6 @@ const JoinedShopDetails: React.FC = () => {
                   </View>
                 </View>
               </View>
-
             </View>
 
             {/* Product List */}
@@ -898,7 +896,6 @@ const JoinedShopDetails: React.FC = () => {
                 <Text style={{ fontSize: 14 }}>
                   <Text style={{ fontWeight: "700" }}>Phone: </Text>
                   {shopDetails?.phone}
-
                 </Text>
               )}
               {!!shopInfo?.email && (
@@ -906,7 +903,7 @@ const JoinedShopDetails: React.FC = () => {
                   <Text style={{ fontWeight: "700" }}>Email: </Text>
                   {shopInfo?.email}
                 </Text>
-
+              )}
               {!!shopDetails?.address && (
                 <Text style={{ fontSize: 14 }}>
                   <Text style={{ fontWeight: "700" }}>Address: </Text>
@@ -964,12 +961,10 @@ const JoinedShopDetails: React.FC = () => {
             </View>
 
             <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
-
               <Pressable
                 onPress={() => setShowShopInfoModal(false)}
                 style={modalStyles.buttonPrimary}
               >
-
                 <Text style={modalStyles.buttonPrimaryText}>Close</Text>
               </Pressable>
             </View>

@@ -119,20 +119,24 @@ export default function CustomerHomeScreen() {
         // Check if user is still authenticated before processing data
         if (!getAuth().currentUser) return;
 
-        if (doc.exists()) {
-          const data = doc.data();
+        if (customerSnap.exists()) {
+          const data = customerSnap.data();
 
           setCustomer(data);
           setProfileImage(data.photoURL || null);
 
           // React to joined shops changes in real-time
           const joined: string[] = (data as any).shopsJoined || [];
-          const changed = joined.length !== lastJoinedShops.length || joined.some((id, i) => id !== lastJoinedShops[i]);
+          const changed =
+            joined.length !== lastJoinedShops.length ||
+            joined.some((id, i) => id !== lastJoinedShops[i]);
           if (changed) {
             // Cleanup existing shop listeners that are not in the new list
             Object.keys(shopsListenerMap).forEach((shopId) => {
               if (!joined.includes(shopId)) {
-                try { shopsListenerMap[shopId]?.(); } catch {}
+                try {
+                  shopsListenerMap[shopId]?.();
+                } catch {}
                 delete shopsListenerMap[shopId];
                 delete shopDataMap[shopId];
               }
